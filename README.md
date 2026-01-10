@@ -29,3 +29,7 @@ This repo includes:
 - Heavy artifacts and datasets should be **gitignored** and not versioned directly here.  
 
 ---
+<img width="1889" height="873" alt="Screenshot 2025-12-30 171339" src="https://github.com/user-attachments/assets/8da4972a-521d-43f1-927a-4e84034cacce" />
+
+<img width="1881" height="1007" alt="Screenshot 2025-12-30 171629" src="https://github.com/user-attachments/assets/0c1443b9-6e6f-48c9-8098-e7fb21431032" />
+
