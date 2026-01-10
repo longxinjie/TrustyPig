@@ -1,5 +1,8 @@
 # TrustyPig – Model (MLOps)
 
+<img width="890" height="524" alt="Screenshot 2025-12-30 171811" src="https://github.com/user-attachments/assets/3c2a206d-5275-42d6-b28b-29f200b8c796" />
+
+
 ⚠️ **Note**: This repository does **not** contain the full TrustyPig implementation.  
 It only contains the **machine learning (MLOps) components** used for fraud detection.  
 The main application (the Flask backend, frontend templates and deployment configuration) will be incrementally cleaned up and pushed as part of an effort to improve overall code readibility.
