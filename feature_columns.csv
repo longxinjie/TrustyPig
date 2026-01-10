@@ -1,0 +1,12 @@
+0
+wallet_ratio
+hour_of_day
+amount
+receiver_freq
+sender_freq
+is_merchant
+type_CASH_IN
+type_CASH_OUT
+type_DEBIT
+type_PAYMENT
+type_TRANSFER
