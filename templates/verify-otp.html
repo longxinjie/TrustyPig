@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Verify OTP – SMU FinWallet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/verify_otp.css') }}" />
+</head>
+
+<body class="fade-in">
+  <div class="form-container">
+    <img
+      src="{{ url_for('static', filename='logo.png') }}"
+      alt="SMU FinWallet Logo"
+      style="width: 350px; margin-bottom: 20px;"
+    />
+
+    <p id="otp-instruction" style="text-align:center; color:white; margin-top: 5px; margin-bottom: 15px;"></p>
+
+    <div class="otp-row">
+      <input type="text" id="otp" placeholder="6-digit OTP" required />
+      <button type="button" onclick="verifyOTP()">Verify</button>
+    </div>
+
+    <div id="success-message">
+      ✅ Transaction is processed successfully! Redirecting you to the homepage shortly...
+    </div>
+  </div>
+
+  <!-- Firebase SDK and SweetAlert2 -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <script>
+
+    const firebaseConfig = {{ firebase_config | tojson }};
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    /* Register or Verify Transaction? */
+    const urlParams = new URLSearchParams(window.location.search);
+    const reason = urlParams.get("reason"); 
+
+    let userInfo = JSON.parse(localStorage.getItem("pendingUser"));
+    let stored = JSON.parse(localStorage.getItem("confirmationResult")); 
+
+    /* Immediately Invoked Function Expression */
+    (function initVerifyPage() {
+
+      if (!userInfo?.phone) {
+        Swal.fire("Missing info", "Missing phone number. Please restart the flow.", "error");
+        return;
+      }
+
+      if (!stored?.verificationId) {
+        Swal.fire("Missing session", "OTP session not found. Please request OTP again.", "error");
+        return;
+      }
+
+      document.getElementById("otp-instruction").textContent =
+        `Enter OTP sent to ${userInfo.phone}`;
+    })();
+
+    async function verifyOTP() {
+      const code = document.getElementById("otp").value.trim();
+      stored = JSON.parse(localStorage.getItem("confirmationResult"));
+
+      if (!code) {
+        Swal.fire("Error", "Please enter the 6-digit OTP.", "error");
+        return;
+      }
+
+      if (!stored?.verificationId || !userInfo?.phone) {
+        Swal.fire("Missing session", "Please restart verification.", "error");
+        return;
+      }
+
+      try {
+        /* verficationId: identifies which OTP session */
+        /* code: the 6-digit OTP the user entered */
+        /* Create a credential*/
+        const credential = firebase.auth.PhoneAuthProvider.credential(stored.verificationId, code);
+        /* Sign in with the credential */
+        const result = await auth.signInWithCredential(credential);
+        /* Get the authenticated user */
+        const user = result.user;
+
+        const updateData = { otp_verified: true };
+
+        if (reason === "suspicious") {
+          updateData.has_fraud_alert = false;
+          updateData.fraud_reason = null;
+
+          await db.collection("users").doc(user.uid).set(updateData, { merge: true });
+
+          const token = await user.getIdToken();
+          const res = await fetch("/api/verify-transaction", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ idToken: token })
+          });
+
+          const json = await res.json();
+          if (!json.success) {
+            Swal.fire("Error", json.message || "Could not verify transaction.", "error");
+            return;
+          }
+
+          const successEl = document.getElementById("success-message");
+          if (successEl) successEl.style.display = "block";
+        }
+
+        else {
+          updateData.name = userInfo.name;
+          updateData.phone = userInfo.phone;
+          updateData.createdAt = firebase.firestore.FieldValue.serverTimestamp();
+          updateData.balance = 0;
+          if (userInfo.email) updateData.email = userInfo.email;
+
+          await db.collection("users").doc(user.uid).set(updateData, { merge: true });
+
+          const res = await fetch("/create-stripe-customer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              uid: user.uid,
+              name: userInfo.name || "User",
+              phone: userInfo.phone,
+              email: userInfo.email || null
+            })
+          });
+
+          const stripeData = await res.json();
+          if (!stripeData.customer_id) {
+            Swal.fire("Error", stripeData.error || "Stripe customer creation failed.", "error");
+            return;
+          }
+
+          await db.collection("users").doc(user.uid).set(
+            { stripeCustomerId: stripeData.customer_id },
+            { merge: true }
+          );
+        }
+
+        const displayName = userInfo?.name || "User";
+
+        localStorage.removeItem("confirmationResult");
+        localStorage.removeItem("pendingUser");
+
+        document.body.classList.remove("fade-in");
+        document.body.classList.add("fade-out");
+
+        setTimeout(() => {
+          if (reason === "suspicious") {
+            window.location.href = "/home";
+          } else {
+            window.location.href = `/success-registration?name=${encodeURIComponent(displayName)}`;
+          }
+        }, 600);
+
+      } catch (err) {
+        console.error("❌ Verification failed:", err);
+        Swal.fire("Error", "Invalid OTP. Please try again.", "error");
+      }
+    }
+  </script>
+</body>
+</html>

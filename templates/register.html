@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Register – SMU FinWallet</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}" />
+</head>
+
+<body class="fade-in">
+  <div class="split-container">
+    <!-- Left Panel -->
+    <div class="left-panel">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="SMU FinWallet Logo" style="width: 350px; margin-bottom: 20px;" />
+      <p style="color: white; text-align: center; margin-top: 20px;">
+        A Smart, Secure and Simple Digital Wallet with
+        <a href="/what-is-fraud-sight" style="color: white;">Built-in Fraud Protection.</a>
+      </p>
+      <lottie-player
+        src="{{ url_for('static', filename='register.json') }}"
+        background="transparent"
+        speed="1"
+        style="width: 300px; height: 300px;"
+        loop
+        autoplay>
+      </lottie-player>
+    </div>
+
+    <!-- Right Panel -->
+    <div class="right-panel">
+      <div class="form-container">
+        <h2>Create Your FinWallet Account</h2>
+        <form id="register-form">
+          <input type="text" id="name" placeholder="Full Name" required />
+          <input type="tel" id="phone" placeholder="Phone Number" required />
+          <input type="email" id="email" placeholder="Email Address (optional)" />
+          <input type="password" id="password" placeholder="Password" required />
+          <input type="password" id="confirm-password" placeholder="Confirm Password" required />
+          <div id="recaptcha-container"></div>
+          <button type="submit">Register</button>
+        </form>
+        <div class="login-link">
+          Already have an account? <a href="/login">Login</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <script>
+    function formatSingaporePhoneNumber(input) {
+      const digitsOnly = input.replace(/\D/g, "");
+      const isValidSG = digitsOnly.length === 8 && /^[89]/.test(digitsOnly);
+      return isValidSG ? "+65" + digitsOnly : null;
+    }
+
+    const firebaseConfig = {{ firebase_config | tojson}};
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    /* Creates a reCAPTCHA verifier object*/
+    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
+      size: 'invisible'
+    });
+
+    document.getElementById("register-form").addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      const name = document.getElementById("name").value.trim();
+      const rawPhone = document.getElementById("phone").value.trim();
+      const phone = formatSingaporePhoneNumber(rawPhone);
+      const email = document.getElementById("email").value.trim();
+      const password = document.getElementById("password").value;
+      const confirmPassword = document.getElementById("confirm-password").value;
+      
+      /* Swal is a JS library called SweetAlert2*/
+
+      if (!phone) {
+        Swal.fire({
+          title: 'Error Message',
+          text: 'Phone number must be 8 digits and start with 8 or 9.',
+          icon: 'error',
+          confirmButtonColor: '#4f46e5'
+        });
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        Swal.fire({
+          title: 'Error Message',
+          text: 'Passwords do not match!',
+          icon: 'error',
+          confirmButtonColor: '#4f46e5'
+        });
+        return;
+      }
+
+      try {
+        const appVerifier = window.recaptchaVerifier;
+
+        /* Use Firebase function that allows phone number authentication */
+        /* Sends OTP via Firebase */
+        const confirmationResult = await auth.signInWithPhoneNumber(phone, appVerifier);
+
+        /* Store verificationId in localStorage to persist data across pages */
+        localStorage.setItem("confirmationResult", JSON.stringify({
+          verificationId: confirmationResult.verificationId
+        }));
+        
+        localStorage.setItem("pendingUser", JSON.stringify({
+          name,
+          phone,
+          email: email || null,
+          password
+        }));
+
+        document.body.classList.add('fade-out');
+        setTimeout(() => {
+          window.location.href = "/verify-otp";
+        }, 600);
+      } 
+      
+      catch (error) {
+        console.error("Error sending OTP:", error);
+        Swal.fire({
+          title: 'SMU FinWallet Error Message',
+          text: 'Failed to send OTP: ' + error.message,
+          icon: 'error',
+          confirmButtonColor: '#4f46e5'
+        });
+      }
+    });
+  </script>
+</body>
+</html>
