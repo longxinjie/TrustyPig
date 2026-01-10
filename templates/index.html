@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Welcome to SMU FinWallet!</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+</head>
+
+<body>
+  <div class="split-container fade-in" id="container">
+    <div class="left-panel">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="SMU FinWallet Logo" style="width: 350px; margin-bottom: 20px;" />
+      <p>
+        A Smart, Secure and Simple Digital Wallet with 
+        <span class="custom-underline">Built-in Fraud Protection</span>.
+      </p>
+      <!-- custom element provided by the LottieFiles JS Library-->
+      <lottie-player
+        src="{{ url_for('static', filename='index_animation.json') }}"
+        background="transparent"
+        speed="1"
+        style="width: 300px; height: 300px;"
+        loop
+        autoplay>
+      </lottie-player>
+    </div>
+    <div class="right-panel">
+      <h2>Power Your Wallet.</h2>
+      <h2>Shield Every Transaction.</h2>
+      <p>Manage your finances with TrustyPig and stay protected with real-time fraud detection from FraudSight.</p>
+      <button class="btn btn-primary" id="getStartedBtn">Get Started</button>
+      <button class="btn btn-secondary" id="loginBtn">Login</button>
+    </div>
+  </div>
+
+  <script>
+    function fadeAndRedirect(targetUrl){
+      const container = document.getElementById("container");
+      container.classList.remove("fade-in");
+      container.classList.add("fade-out");
+
+      setTimeout(()=> {
+        window.location.href = targetUrl;
+      }, 500);
+    }
+
+    document.getElementById("getStartedBtn").addEventListener("click", function () {
+      fadeAndRedirect("/register")
+    });
+
+    document.getElementById("loginBtn").addEventListener("click", function () {
+      fadeAndRedirect("/login")
+    });
+  </script>
+</body>
+</html>
