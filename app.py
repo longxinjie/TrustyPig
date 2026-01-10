@@ -39,6 +39,17 @@ model = joblib.load(MODEL_PATH)
 app = Flask(__name__)
 CORS(app) 
 
+# --- Firebase Config ---
+def get_firebase_config():
+    return {
+        "apiKey": os.getenv("FIREBASE_API_KEY"),
+        "authDomain": os.getenv("FIREBASE_AUTH_DOMAIN"),
+        "projectId": os.getenv("FIREBASE_PROJECT_ID"),
+        "storageBucket": os.getenv("FIREBASE_STORAGE_BUCKET"),
+        "messagingSenderId": os.getenv("FIREBASE_MESSAGING_SENDER_ID"),
+        "appId": os.getenv("FIREBASE_APP_ID"),
+    }
+
 # --- MAIN PAGE --- 
 @app.route('/')
 def index():
@@ -50,7 +61,11 @@ def login():
 
 @app.route("/register")
 def register():
-    return render_template("register.html")
+    return render_template("register.html", firebase_config=get_firebase_config())
+
+@app.route('/verify-otp')
+def verify_otp():
+    return render_template("verify-otp.html", firebase_config=get_firebase_config())
 
 @app.route("/create-stripe-customer", methods=["POST"])
 def create_customer():
@@ -138,10 +153,6 @@ def get_linked_card():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-    
-@app.route('/verify-otp')
-def verify_otp():
-    return render_template("verify-otp.html")
 
 @app.route('/success-registration')
 def success_registration():
