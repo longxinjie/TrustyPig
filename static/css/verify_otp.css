@@ -1,0 +1,83 @@
+* { box-sizing: border-box; 
+    font-family: 'Inter', sans-serif; margin: 0; padding: 0; 
+}
+
+body {
+    background: linear-gradient(to right, #f4f7fa, #e8ecf1);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.6s ease-out;
+}
+
+body.fade-in { animation: fadeIn 0.6s ease-out; }
+
+body.fade-out { opacity: 0; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.form-container {
+    background-color: #4f46e5;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 90%;
+}
+
+.otp-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 20px;
+}
+
+.otp-row input {
+    flex: 2;
+    height: 48px;
+    padding: 0 14px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+}
+
+.otp-row button {
+    flex: 1;
+    height: 48px;
+    background-color: white;
+    color: #4f46e5;
+    font-weight: 600;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 80px;
+}
+
+.otp-row button:hover { 
+    background-color: #f0f0f0; 
+}
+
+#success-message {
+    display: none;
+    margin-top: 20px;
+    background-color: #d1fae5;
+    color: #065f46;
+    border: 1px solid #10b981;
+    padding: 16px;
+    border-radius: 12px;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+    font-weight: 600;
+}
