@@ -2,7 +2,7 @@
 
 ⚠️ **Note**: This repository does **not** contain the full TrustyPig implementation.  
 It only contains the **machine learning (MLOps) components** used for fraud detection.  
-The main application (Flask backend, frontend templates, deployment configs, etc.) is kept separately.
+The main application (the Flask backend, frontend templates and deployment configuration) will be incrementally cleaned up and pushed as part of an effort to improve overall code readibility.
 
 ---
 
