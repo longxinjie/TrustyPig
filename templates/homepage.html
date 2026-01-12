@@ -108,9 +108,14 @@
 <div id="notificationsWrapper" class="dashboard-card">
   <h2 style="margin-top: 0; color: #1f2937;">Notifications 🔔 </h2>
 
+  <!-- Friend Requests -->
+  <div id="friendRequestsCard" class="friend-requests-card" style="display: none;">
+    <h3 class="friend-requests-title">Friend Requests</h3>
+    <div id="friendRequestsList"></div>
+  </div>
+
   <!-- Suspicious Activity Alert -->
   <div id="fraudAlertCard" style="display: none; background-color: #fff8e1; border: 1px solid #facc15; border-radius: 12px; padding: 16px 20px; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);">
-
     <!-- Text Content -->
     <div style="flex: 1;">
       <h3 style="margin: 0 0 10px 0; color: #92400e;">Suspicious Activity Detected!</h3>
@@ -126,7 +131,6 @@
         </lottie-player>
         Verify Now
       </a>
-
     </div>
   </div>
 
@@ -192,54 +196,62 @@
             document.getElementById("avatarInitials").textContent = name.split(' ').map(n => n[0]).join('').toUpperCase();
             document.getElementById("mainBalance").textContent = `$${balance.toFixed(2)}`;
 
+            // Show friend requests if exists
             db.collection("users").doc(uid).collection("friend_requests")
-            .where("status", "==", "pending")
-            .get().then(snapshot => {
-              if (!snapshot.empty) {
-                const wrapper = document.getElementById("notificationsWrapper");
+              .where("status", "==", "pending")
+              .get()
+              .then(snapshot => {
+                const card = document.getElementById("friendRequestsCard");
+                const list = document.getElementById("friendRequestsList");
 
-                snapshot.forEach(doc => {
-                  const req = doc.data();
-                  const card = document.createElement("div");
-                  card.innerHTML = `
-                    <div style="
-                    background: #ecfeff;
-                    border: 1px solid #67e8f9;
-                    padding: 16px;
-                    border-radius: 12px;
-                    display: flex;
-                    flex-direction: column;
-                    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-                    margin-bottom: 16px;
-                  ">
-                    <div>
-                      <div style="font-size: 18px; font-weight: 600; color: #0c4a6e;">Friend Request</div>
-                      <p style="margin: 12px 0 16px 0; color: #0369a1;">
-                        <b>${req.fromName}</b> (${req.fromPhone}) wants to be your friend.
-                      </p>
-                    </div>
-                    <button onclick="acceptFriend('${doc.id}', '${req.from}', '${req.fromName}', '${req.fromPhone}', this)"
-                      style="display: flex; align-items: center; gap: 8px; padding: 10px 18px; background-color: #22d3ee; color: #0f172a; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; align-self: start;">
-                      <lottie-player
-                        src="{{ url_for('static', filename='add-friends.json') }}"
-                        background="transparent"
-                        speed="1"
-                        style="width: 64px; height: 64px;"
-                        loop
-                        autoplay>
-                      </lottie-player>
-                      <span style="font-size: 16px;">Accept Friend's Request!</span>
-                    </button>
-                  </div>
-                `;
+                if (snapshot.empty) {
+                  card.style.display = "none";
+                  return;
+                }
 
-                ;
+                card.style.display = "block";
+                list.textContent = "";
 
-                  wrapper.insertBefore(card, wrapper.children[1]);
+                snapshot.forEach(reqDoc => {
+                  const req = reqDoc.data();
 
+                  const item = document.createElement("div");
+                  item.className = "friend-request-card";
+
+                  const title = document.createElement("div");
+                  title.className = "friend-request-title";
+                  title.textContent = "Friend Request";
+
+                  const text = document.createElement("p");
+                  text.className = "friend-request-text";
+                  text.textContent = `${req.fromName} (${req.fromPhone}) wants to be your friend.`;
+
+                  const btn = document.createElement("button");
+                  btn.className = "friend-request-btn";
+                  btn.onclick = () =>
+                    acceptFriend(reqDoc.id, req.from, req.fromName, req.fromPhone, btn);
+
+                  const lottie = document.createElement("lottie-player");
+                  lottie.setAttribute("src", "{{ url_for('static', filename='add-friends.json') }}");
+                  lottie.setAttribute("background", "transparent");
+                  lottie.setAttribute("speed", "1");
+                  lottie.setAttribute("loop", "");
+                  lottie.setAttribute("autoplay", "");
+                  lottie.className = "friend-request-lottie";
+
+                  const label = document.createElement("span");
+                  label.textContent = "Accept Friend's Request!";
+
+                  btn.appendChild(lottie);
+                  btn.appendChild(label);
+
+                  item.appendChild(title);
+                  item.appendChild(text);
+                  item.appendChild(btn);
+
+                  list.appendChild(item);
                 });
-              }
-            });
+              });
 
             // Load today’s transactions from subcollection
             const tbody = document.getElementById("todaysTransactionsBody");
@@ -335,16 +347,16 @@
       });
 
       // Hide the parent card
-      const parentCard = btn.closest("div[style*='background']");
-      parentCard.innerHTML = `
-        <div style="width: 100%; text-align: left; padding: 20px; font-weight: bold; color: #059669; background-color: #d1fae5; border-radius: 12px;">
-          🎉 Friend's Request Accepted!
-        </div>
-      `;
+      const parentCard = btn.closest(".friend-request-card");
+      parentCard.textContent = "";
 
-      setTimeout(() => {
-        parentCard.remove();
-      }, 3000);
+        const msg = document.createElement("div");
+        msg.className = "friend-accepted";
+        msg.textContent = "🎉 Friend's Request Accepted!";
+
+        parentCard.appendChild(msg);
+
+        setTimeout(() => parentCard.remove(), 3000);
     });
   }
 
