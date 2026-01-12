@@ -1,0 +1,69 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(to right, #f4f7fa, #e8ecf1);
+    opacity: 0;
+    animation: fadeIn 0.6s ease-out forwards;
+    transition: opacity 0.6s ease-out;
+}
+
+@keyframes fadeIn {
+    to { opacity: 1; }
+}
+
+.success-box {
+    background-color: white;
+    padding: 40px 60px;
+    width: 480px;
+    max-width: 90%;
+    margin: 100px auto;
+    border-radius: 20px;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.checkmark-circle {
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background-color: #22c55e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.checkmark-circle svg {
+    width: 36px;
+    height: 36px;
+    stroke: white;
+}
+
+.title {
+    color: #1f2937;
+    font-size: 28px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    line-height: 1.2;
+}
+
+p {
+    font-size: 16px;
+    color: #4b5563;
+    margin-bottom: 8px;
+}
+
+.redirect-msg {
+    font-size: 14px;
+    color: #9ca3af;
+    margin-top: 8px;
+}

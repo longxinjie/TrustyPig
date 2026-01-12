@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Success Registration - TrustyPig!</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/success_registration.css') }}" />
+</head>
+<body>
+  <div class="success-box">
+    <div class="checkmark-circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    </div>
+    <h2 class="title">Registration Successful!</h2>
+    <p>You can now link your payment method.</p>
+    <div class="redirect-msg">Redirecting to the next page...</div>
+  </div>
+
+  <script>
+    setTimeout(() => {
+      document.body.style.opacity = 0;
+      setTimeout(() => {
+        window.location.href = "/add-card";
+      }, 600); 
+    }, 3000);
+  </script>
+</body>
+</html>
