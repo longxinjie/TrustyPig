@@ -56,9 +56,10 @@ def get_firebase_config():
 def index():
     return render_template('index.html')
 
+# --- Login Page ---
 @app.route('/login')
 def login():
-    return render_template("login.html")
+    return render_template("login.html", firebase_config=get_firebase_config())
 
 # --- Registration Page ---
 @app.route("/register")
