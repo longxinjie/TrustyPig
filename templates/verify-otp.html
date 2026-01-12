@@ -161,7 +161,7 @@
           if (reason === "suspicious") {
             window.location.href = "/home";
           } else {
-            window.location.href = `/success-registration?name=${encodeURIComponent(displayName)}`;
+            window.location.href = `/success-registration?name=${encodeURIComponent(displayName)}`; /* Encode individual query parameters */
           }
         }, 600);
 
