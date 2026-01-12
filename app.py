@@ -27,6 +27,7 @@ db = firestore.client() # access to Firestore
 import stripe
 
 stripe.api_key = os.getenv("STRIPE_SECRET_KEY")
+STRIPE_PUBLIC_KEY = os.getenv("STRIPE_PUBLIC_KEY")
 
 # --- Load Model Artifacts ---
 MODEL_PATH = os.getenv("MODEL_PATH", "model/fraud_model.pkl")
@@ -69,7 +70,7 @@ def register():
 def verify_otp():
     return render_template("verify-otp.html", firebase_config=get_firebase_config())
 
-# --- Add Card Page ---
+# --- API Endpoint to create customer on Stripe ---
 @app.route("/create-stripe-customer", methods=["POST"])
 def create_stripe_customer():
     data = request.get_json()
@@ -91,10 +92,16 @@ def create_stripe_customer():
 
     return jsonify({"customer_id": customer.id})
 
+# --- Success Registration Page ---
+@app.route('/success-registration')
+def success_registration():
+    return render_template("success-registration.html")
+
+# --- Add Card Page ---
 @app.route("/add-card", methods=["GET", "POST"])
 def add_card_page():
     if request.method == "GET":
-        return render_template("add-card.html")
+        return render_template("add-card.html", firebase_config=get_firebase_config(), stripe_public_key=STRIPE_PUBLIC_KEY)
 
     if request.method == "POST":
         data = request.get_json()
@@ -156,10 +163,6 @@ def get_linked_card():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-
-@app.route('/success-registration')
-def success_registration():
-    return render_template("success-registration.html")
     
 @app.route('/home')
 def home():

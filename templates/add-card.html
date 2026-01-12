@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Add Card – TrustyPig</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://js.stripe.com/v3/"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/add_card.css') }}" />
+</head>
+<body>
+  <div class="card-container">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="TrustyPig Logo" />
+    <h2>Add Card to Saved Payments</h2>
+    <form id="card-form">
+      <div id="card-element"><!-- Stripe Card Element --></div>
+      <button type="submit">Add Card</button>
+    </form>
+    <div class="message" id="msg"></div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script>
+     const firebaseConfig = {{ firebase_config | tojson}};
+    firebase.initializeApp(firebaseConfig);
+
+    firebase.auth().onAuthStateChanged((user) => {
+      if (user) {
+        initStripe(user.uid);
+      } else {
+        document.getElementById('msg').textContent = "User not authenticated.";
+      }
+    });
+
+    function initStripe(uid) {
+      const stripe = Stripe("{{stripe_public_key}}")
+      const elements = stripe.elements(); /* Stripe helper that creates UI components -- for secure inputs */ 
+
+      const card = elements.create('card', {
+        style: {
+          base: {
+            color: 'white',
+            fontSize: '16px',
+            '::placeholder': {
+              color: 'rgba(255,255,255,0.7)'
+            }
+          }
+        }
+      });
+
+      card.mount('#card-element');
+
+      const form = document.getElementById('card-form');
+      const msg = document.getElementById('msg');
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const { token, error } = await stripe.createToken(card); /* Take the card data entered and tokenise it securely*/
+        /* Stripe sends that data directly to the Stripe's server and provides a short-lived token. */
+
+        if (error) {
+          msg.textContent = error.message;
+          msg.style.color = "red";
+          return;
+        }
+
+        const res = await fetch("http://localhost:5000/add-card", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token: token.id, uid })
+        });
+
+        const data = await res.json();
+        if (data.success) {
+          form.querySelector('button').style.display = 'none';
+          msg.innerHTML = `<p style="color: white;">Card added successfully! Redirecting...</p>`;
+
+          setTimeout(() => {
+            document.body.classList.add('fade-out');
+            setTimeout(() => {
+              window.location.href = "/home";
+            }, 500);
+          }, 2000); 
+
+        } else {
+          msg.textContent = "Failed to add card. Please enter your card details correctly.";
+          msg.style.color = "red";
+        }
+      });
+    }
+  </script>
+</body>
+</html>
