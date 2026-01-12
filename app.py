@@ -59,22 +59,25 @@ def index():
 def login():
     return render_template("login.html")
 
+# --- Registration Page ---
 @app.route("/register")
 def register():
     return render_template("register.html", firebase_config=get_firebase_config())
 
+# --- OTP Page ---
 @app.route('/verify-otp')
 def verify_otp():
     return render_template("verify-otp.html", firebase_config=get_firebase_config())
 
+# --- Add Card Page ---
 @app.route("/create-stripe-customer", methods=["POST"])
-def create_customer():
+def create_stripe_customer():
     data = request.get_json()
 
     name = data.get("name")
     phone = data.get("phone")
     uid = data.get("uid")
-    email = data.get("email")  # Optional
+    email = data.get("email") 
 
     if not all([name, phone, uid]):
         return jsonify({"error": "Missing required fields"}), 400
