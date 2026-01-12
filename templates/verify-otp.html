@@ -115,6 +115,7 @@
           if (successEl) successEl.style.display = "block";
         }
 
+        /* Registration Path */
         else {
           updateData.name = userInfo.name;
           updateData.phone = userInfo.phone;
@@ -141,13 +142,14 @@
             return;
           }
 
+          /* Add Stripe Customer ID to Firestore */
           await db.collection("users").doc(user.uid).set(
             { stripeCustomerId: stripeData.customer_id },
             { merge: true }
           );
         }
 
-        const displayName = userInfo?.name || "User";
+        const displayName = userInfo?.name;
 
         localStorage.removeItem("confirmationResult");
         localStorage.removeItem("pendingUser");
