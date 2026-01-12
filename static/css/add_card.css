@@ -1,0 +1,79 @@
+body {
+    font-family: 'Inter', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background: linear-gradient(to right, #f4f7fa, #e8ecf1);
+    margin: 0;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out forwards;
+    transition: opacity 0.5s ease;
+}
+
+@keyframes fadeIn {
+    to {
+    opacity: 1;
+    }
+}
+
+.card-container {
+    background: #4f46e5;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    max-width: 420px;
+    width: 100%;
+    text-align: center;
+}
+
+.card-container img {
+    width: 280px;
+    margin-bottom: 20px;
+}
+
+h2 {
+    margin-bottom: 20px;
+    color: white;
+    font-size: 22px;
+}
+
+#card-element {
+    border: 1px solid white;
+    padding: 12px;
+    border-radius: 8px;
+    background-color: transparent;
+    color: white;
+    margin-bottom: 20px;
+}
+
+button {
+    background-color: white;
+    color: #4f46e5;
+    font-weight: 600;
+    padding: 12px;
+    border: none;
+    width: 100%;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    font-size: 16px;
+}
+
+button:hover {
+    background-color: #f0f0f0;
+}
+
+.message {
+    margin-top: 15px;
+    color: white;
+    text-align: center;
+}
+
+.StripeElement {
+    color: white;
+}
+
+.StripeElement::placeholder {
+    color: rgba(255, 255, 255, 0.7);
+}
