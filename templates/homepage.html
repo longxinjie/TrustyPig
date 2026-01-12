@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/homepage.css') }}" />
+  <title>HomePage - TrustyPig!</title>
+</head>
+
+<body class="fade-in">
+  <main>
+    <!-- Welcome Section -->
+    <div class="card welcome-section">
+      <div>
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="TrustyPig Logo" style="height: 70px; object-fit: contain;" />
+      </div>
+      <div class="profile-container">
+        <div class="profile-mini" onclick="toggleDropdown()">
+          <div class="avatar" id="avatarInitials">--</div>
+          <div>
+            <div class="username" id="userName">Loading...</div>
+            <div id="walletBalance" class="wallet-balance">Balance: $--.--</div>
+          </div>
+          <div class="arrow">▾</div>
+        </div>
+      </div>
+    </div>
+
+<!-- Wallet + 3 Tabs Row -->
+<div class="wallet-row">
+  
+<!-- Left Column: Main Wallet + Access My Wallets + Friends side by side -->
+<div class="left-column">
+
+  <!-- Main Wallet Card -->
+  <div class="card balance-card" style="margin-bottom: 20px; height: 120px;">
+    <h3>Main Wallet</h3>
+    <div class="amount" id="mainBalance">$0.00</div>
+  </div>
+
+  <!-- Access My Wallets + Friends Tabs Side-by-Side -->
+  <div class="friends-wallet-row">
+
+    <!-- Friends Tab -->
+    <a href="/friends" class="tab friends" style="flex: 1; height: 96px; text-decoration: none; color: inherit;">
+      <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <img src="{{ url_for('static', filename='friends.png') }}" alt="Friends Icon" style="width: 96px; height: 72px;" />
+        <div style="font-weight: 600; font-size: 16px; margin-bottom: 10px;">Friends</div>
+      </div>
+    </a>
+
+    <!-- Access My Wallets Tab -->
+    <a href="/wallet" class="tab wallets" style="flex: 1; height: 96px; text-decoration: none; color: inherit;">
+      <div style="height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <img src="{{ url_for('static', filename='wallet.png') }}" alt="Wallet Icon" style="width: 72px; height: 72px;" />
+        <div style="font-weight: 600; font-size: 16px; text-align: center;margin-bottom: 10px;margin-top: 6px;">
+          <div>Access My Wallet</div>
+        </div>
+      </div>
+    </a>
+
+  </div>
+</div>
+
+  <!-- Right Column: 3 Horizontal Tabs with same height as left stack -->
+  <div class="right-tabs">
+    
+    <a href="/piggypay" class="tab piggypay" style="height: 100%; font-size: 18px;">
+      <lottie-player
+        src="{{ url_for('static', filename='flashpay.json') }}"
+        background="transparent"
+        speed="1"
+        style="width: 124px; height: 124px;"
+        loop
+        autoplay>
+      </lottie-player>
+      PiggyPay
+    </a>
+
+    <a href="/fraudsight" class="tab fraudsight" style="height: 100%; font-size: 18px;">
+      <lottie-player
+        src="{{ url_for('static', filename='aibot.json') }}"
+        background="transparent"
+        speed="1"
+        style="width: 124px; height: 124px;"
+        loop
+        autoplay>
+      </lottie-player>
+      FraudSight
+    </a>
+
+    <a href="/uniperks" class="tab uniperks" style="height: 100%; font-size: 18px;">
+      <lottie-player
+        src="{{ url_for('static', filename='markerplace.json') }}"
+        background="transparent"
+        speed="1"
+        style="width: 124px; height: 124px;"
+        loop
+        autoplay>
+      </lottie-player>
+      UniPerks!
+    </a>
+
+  </div>
+</div>
+
+    <!-- Notifications Wrapper -->
+<div id="notificationsWrapper" class="dashboard-card">
+  <h2 style="margin-top: 0; color: #1f2937;">Notifications 🔔 </h2>
+
+  <!-- Suspicious Activity Alert -->
+  <div id="fraudAlertCard" style="display: none; background-color: #fff8e1; border: 1px solid #facc15; border-radius: 12px; padding: 16px 20px; align-items: center; justify-content: space-between; gap: 16px; box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);">
+
+    <!-- Text Content -->
+    <div style="flex: 1;">
+      <h3 style="margin: 0 0 10px 0; color: #92400e;">Suspicious Activity Detected!</h3>
+      <p style="margin: 0 0 10px 0; color: #92400e;">A transaction was flagged as suspicious. Please verify to continue using your account securely.</p>
+      <a href="/verify-otp?reason=suspicious" style="display: inline-flex; align-items: center; padding: 10px 12px; background-color: #facc15; color: #1f2937; border-radius: 8px; font-weight: 600; text-decoration: none;">
+        <lottie-player
+          src="{{ url_for('static', filename='suspicious.json') }}"
+          background="transparent"
+          speed="1"
+          loop
+          autoplay
+          style="width: 48px; height: 48px; margin: 0;">
+        </lottie-player>
+        Verify Now
+      </a>
+
+    </div>
+  </div>
+
+  <!-- Today's Transactions -->
+  <div style="margin-top: 32px;">
+    <h4 style="margin-bottom: 12px; color: #374151;">Today's Transactions</h4>
+    <div style="overflow-x: auto;">
+      <table style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr style="background-color: #f3f4f6;">
+            <th style="text-align: left; padding: 12px;">Type</th>
+            <th style="text-align: left; padding: 12px;">Amount</th>
+            <th style="text-align: left; padding: 12px;">Date</th>
+            <th style="text-align: left; padding: 12px;">Status</th>
+            <th style="text-align: left; padding: 12px;">Fraud Risk</th>
+          </tr>
+        </thead>
+        <tbody id="todaysTransactionsBody">
+          <tr>
+            <td colspan="5" style="padding: 12px; color: #6b7280;">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+</main>
+
+  <!-- Firebase SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <script>
+    const firebaseConfig = {{ firebase_config | tojson}};
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    function toggleDropdown() {}
+
+    auth.onAuthStateChanged(user => {
+      if (user) {
+        const uid = user.uid;
+        db.collection("users").doc(uid).get().then(doc => {
+          if (doc.exists) {
+            const data = doc.data();
+            const name = data.name || "User";
+            const balance = data.balance || 0;
+
+            // Show fraud alert if exists
+            const alertCard = document.getElementById("fraudAlertCard");
+            if (data.has_fraud_alert === true) {
+              alertCard.style.display = "flex";
+            } else {
+              alertCard.style.display = "none";
+            }
+
+            // Set user info
+            document.getElementById("userName").textContent = name;
+            document.getElementById("walletBalance").textContent = `Balance: $${balance.toFixed(2)}`;
+            document.getElementById("avatarInitials").textContent = name.split(' ').map(n => n[0]).join('').toUpperCase();
+            document.getElementById("mainBalance").textContent = `$${balance.toFixed(2)}`;
+
+            db.collection("users").doc(uid).collection("friend_requests")
+            .where("status", "==", "pending")
+            .get().then(snapshot => {
+              if (!snapshot.empty) {
+                const wrapper = document.getElementById("notificationsWrapper");
+
+                snapshot.forEach(doc => {
+                  const req = doc.data();
+                  const card = document.createElement("div");
+                  card.innerHTML = `
+                    <div style="
+                    background: #ecfeff;
+                    border: 1px solid #67e8f9;
+                    padding: 16px;
+                    border-radius: 12px;
+                    display: flex;
+                    flex-direction: column;
+                    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+                    margin-bottom: 16px;
+                  ">
+                    <div>
+                      <div style="font-size: 18px; font-weight: 600; color: #0c4a6e;">Friend Request</div>
+                      <p style="margin: 12px 0 16px 0; color: #0369a1;">
+                        <b>${req.fromName}</b> (${req.fromPhone}) wants to be your friend.
+                      </p>
+                    </div>
+                    <button onclick="acceptFriend('${doc.id}', '${req.from}', '${req.fromName}', '${req.fromPhone}', this)"
+                      style="display: flex; align-items: center; gap: 8px; padding: 10px 18px; background-color: #22d3ee; color: #0f172a; font-weight: 600; border: none; border-radius: 8px; cursor: pointer; align-self: start;">
+                      <lottie-player
+                        src="{{ url_for('static', filename='add-friends.json') }}"
+                        background="transparent"
+                        speed="1"
+                        style="width: 64px; height: 64px;"
+                        loop
+                        autoplay>
+                      </lottie-player>
+                      <span style="font-size: 16px;">Accept Friend's Request!</span>
+                    </button>
+                  </div>
+                `;
+
+                ;
+
+                  wrapper.insertBefore(card, wrapper.children[1]);
+
+                });
+              }
+            });
+
+            // Load today’s transactions from subcollection
+            const tbody = document.getElementById("todaysTransactionsBody");
+            tbody.innerHTML = "";
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            db.collection("users").doc(uid).collection("transactions").get().then(snapshot => {
+              const txs = snapshot.docs.map(doc => doc.data()).filter(tx => {
+                const ts = tx.timestamp?.seconds ? tx.timestamp.seconds * 1000 : tx.timestamp;
+                const txDate = new Date(ts);
+                return txDate >= today;
+              });
+              
+              txs.sort((a, b) => {
+                const ta = a.timestamp?.seconds ? a.timestamp.seconds * 1000 : a.timestamp;
+                const tb = b.timestamp?.seconds ? b.timestamp.seconds * 1000 : b.timestamp;
+                return tb - ta; // descending
+              });
+
+              if (txs.length === 0) {
+                tbody.innerHTML = `
+                  <tr><td colspan="5" style="padding: 12px; color: #6b7280;">No transactions for today.</td></tr>
+                `;
+              } else {
+                txs.forEach(tx => {
+                  const date = new Date(tx.timestamp?.seconds ? tx.timestamp.seconds * 1000 : tx.timestamp);
+                  const formatted = date.toLocaleString('en-SG');
+                  const isFraud = tx.fraud === true;
+                  const fraudScore = tx.fraud_score ? `${(tx.fraud_score * 100).toFixed(1)}%` : "–";
+                  const amount = Math.abs(parseFloat(tx.amount)).toFixed(2);
+
+                  // Define green if CASH_IN or Received..., else red
+                  const isPositive = tx.type === "CASH_IN" || tx.type.includes("Received");
+                  const color = isPositive ? "green" : "red";
+                  const sign = isPositive ? "+" : "-";
+
+                  const tr = document.createElement("tr");
+                  tr.innerHTML = `
+                    <td style="padding: 12px;">${tx.type || "Transaction"}</td>
+
+                    <td style="padding: 12px; color: ${color}; font-weight: 600;">
+                      ${sign}$${amount}
+                    </td>
+                    <td style="padding: 12px;">${formatted}</td>
+                    <td style="padding: 12px;">
+                      <span style="
+                        background-color: ${isFraud ? '#fee2e2' : '#d1fae5'};
+                        color: ${isFraud ? '#b91c1c' : '#047857'};
+                        padding: 4px 10px;
+                        border-radius: 9999px;
+                        font-size: 12px;
+                        font-weight: bold;
+                      ">
+                        ${isFraud ? "Fraudulent" : "Safe"}
+                      </span>
+                    </td>
+                    <td style="padding: 12px;">${fraudScore}</td>
+                  `;
+                  tbody.appendChild(tr);
+                });
+
+              }
+            });
+
+          }
+
+        });
+      } else {
+        window.location.href = "/login";
+      }
+    });
+
+    function acceptFriend(requestId, fromUID, fromName, fromPhone, btn) {
+    const currentUID = firebase.auth().currentUser.uid;
+    const userRef = db.collection("users");
+
+    userRef.doc(currentUID).collection("friends").doc(fromUID).set({
+      name: fromName,
+      phone: fromPhone
+    });
+
+    userRef.doc(currentUID).get().then(myDoc => {
+      const me = myDoc.data();
+      userRef.doc(fromUID).collection("friends").doc(currentUID).set({
+        name: me.name,
+        phone: me.phone
+      });
+
+      userRef.doc(currentUID).collection("friend_requests").doc(requestId).update({
+        status: "accepted"
+      });
+
+      // Hide the parent card
+      const parentCard = btn.closest("div[style*='background']");
+      parentCard.innerHTML = `
+        <div style="width: 100%; text-align: left; padding: 20px; font-weight: bold; color: #059669; background-color: #d1fae5; border-radius: 12px;">
+          🎉 Friend's Request Accepted!
+        </div>
+      `;
+
+      setTimeout(() => {
+        parentCard.remove();
+      }, 3000);
+    });
+  }
+
+
+  </script>
+
+</body>
+</html>
