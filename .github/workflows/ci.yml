@@ -44,6 +44,8 @@ jobs:
           python ci/package_artifacts.py
 
       - name: Create CML report
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "# TrustyPig Pipeline CI Report" > report.md
           echo "" >> report.md
@@ -65,7 +67,6 @@ jobs:
           echo "" >> report.md
           echo "## Pipeline CI Decision" >> report.md
           echo "**Approved for Pipeline CD**" >> report.md
-
           cat report.md
 
       - name: Upload CI package
