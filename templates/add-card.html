@@ -19,11 +19,17 @@
     <div class="message" id="msg"></div>
   </div>
 
+ <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
   <script>
      const firebaseConfig = {{ firebase_config | tojson}};
-    firebase.initializeApp(firebaseConfig);
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const db = firebase.firestore();
 
     firebase.auth().onAuthStateChanged((user) => {
       if (user) {

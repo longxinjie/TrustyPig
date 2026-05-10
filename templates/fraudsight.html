@@ -236,21 +236,13 @@
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-
   <script>
-    // Same Firebase app config as homepage
-    const firebaseConfig = {
-      apiKey: "AIzaSyCHs2gr92xsPcPGgpvtlepvSBjYvgSOAgw",
-      authDomain: "smu-fintech-mvp-2025.firebaseapp.com",
-      projectId: "smu-fintech-mvp-2025",
-      storageBucket: "smu-fintech-mvp-2025.appspot.com",
-      messagingSenderId: "792829799933",
-      appId: "1:792829799933:web:71532891d3f1e11b33bd94"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-
+    
+    const firebaseConfig = {{ firebase_config | tojson}};
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const db = firebase.firestore();
+      
     const THRESHOLD = 0.5; // keep in sync with backend env if you like
 
     let trendChart, bucketChart;

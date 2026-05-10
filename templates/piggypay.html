@@ -265,24 +265,15 @@
 
   <!-- Firebase Setup -->
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
 
   <script>
-    const firebaseConfig = {
-      apiKey: "AIzaSyCHs2gr92xsPcPGgpvtlepvSBjYvgSOAgw",
-      authDomain: "smu-fintech-mvp-2025.firebaseapp.com",
-      projectId: "smu-fintech-mvp-2025",
-      storageBucket: "smu-fintech-mvp-2025.appspot.com",
-      messagingSenderId: "792829799933",
-      appId: "1:792829799933:web:71532891d3f1e11b33bd94"
-    };
-    firebase.initializeApp(firebaseConfig);
-  </script>
-
-  <script>
-  const auth = firebase.auth();
-  const db = firebase.firestore();
+  const firebaseConfig = {{ firebase_config | tojson}};
+      firebase.initializeApp(firebaseConfig);
+      const auth = firebase.auth();
+      const db = firebase.firestore();
 
   auth.onAuthStateChanged(user => {
     if (!user) return;
