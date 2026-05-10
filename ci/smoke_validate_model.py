@@ -64,7 +64,7 @@ else:
     proba = pred
 
 accuracy = accuracy_score(y, pred)
-f1 = f1_score(y, pred)
+f1 = f1_score(y, pred, zero_division=0)
 
 print(f"Smoke accuracy: {accuracy:.4f}")
 print(f"Smoke F1: {f1:.4f}")
@@ -76,7 +76,10 @@ if len(set(y)) > 1:
 if accuracy < MIN_ACCURACY:
     raise RuntimeError(f"Smoke accuracy too low: {accuracy:.4f}")
 
-if f1 < MIN_F1:
-    raise RuntimeError(f"Smoke F1 too low: {f1:.4f}")
+if y.sum() > 0:
+    if f1 < MIN_F1:
+        raise RuntimeError(f"Smoke F1 too low: {f1:.4f}")
+else:
+    print("Skipping F1 check because smoke dataset has no fraud labels.")
 
 print("Smoke validation passed.")
