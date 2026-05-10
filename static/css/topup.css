@@ -1,0 +1,148 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background: linear-gradient(to right, #f4f7fa, #e8ecf1);
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 1;
+    transition: opacity 0.6s ease-out;
+}
+
+body.fade-in {
+    animation: fadeIn 0.6s ease-out;
+}
+
+body.fade-out {
+    opacity: 0;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.form-container {
+    background-color: #4f46e5;
+    padding: 40px 30px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 90%;
+}
+
+label {
+    color: white;
+    font-weight: 600;
+}
+
+input[type="number"] {
+    width: 100%;
+    height: 48px;
+    padding: 0 14px;
+    font-size: 14px;
+    border-radius: 8px;
+    border: none;
+    outline: none;
+    margin: 10px 0 20px;
+}
+
+button {
+    width: 100%;
+    height: 48px;
+    background-color: white;
+    color: #4f46e5;
+    font-weight: 600;
+    font-size: 16px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #f0f0f0;
+}
+
+.status {
+    text-align: center;
+    margin-top: 20px;
+    font-weight: 500;
+    color: white;
+}
+
+#amount-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin: 15px 0;
+}
+
+#amount-buttons button {
+    background-color: white;
+    color: #4f46e5;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 0;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+#amount-buttons button:hover {
+    background-color: #e0e7ff;
+}
+
+.fraud-modal {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #ffffff;
+    padding: 2.5em 2em;
+    border-radius: 20px;
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+    z-index: 9999;
+    width: 90%;
+    max-width: 440px;
+    font-family: 'Inter', sans-serif;
+    text-align: center;
+    animation: fadeInScale 0.4s ease-out;
+}
+
+.fraud-alert {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 1em;
+}
+
+.fraud-title {
+    color: #dc2626;
+    font-size: 22px;
+    font-weight: 700;
+    margin: 0;
+}
+
+.fraud-message {
+    color: #111827;
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+    margin: 1em 0 1.4em;
+}
+
+.fraud-note {
+    font-size: 14px;
+    color: #6b7280;
+}
