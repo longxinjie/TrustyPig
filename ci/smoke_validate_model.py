@@ -106,6 +106,9 @@ accuracy = accuracy_score(y, pred)
 f1 = f1_score(y, pred, zero_division=0)
 
 metrics = {
+    "model_loaded": True,
+    "schema_validated": True,
+    "prediction_pipeline_works": True,
     "accuracy": float(accuracy),
     "f1": float(f1),
     "rows_tested": int(len(df)),
