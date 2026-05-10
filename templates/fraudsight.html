@@ -1,0 +1,549 @@
+<!-- templates/fraudsight.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>FraudSight - SMU FinWallet</title>
+  <style>
+    /* --- Theme copied to match homepage --- */
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(to right, #e0e7ff, #f3f4ff);
+    }
+    main { padding: 30px; }
+    .card, .dashboard-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.07);
+      padding: 20px;
+    }
+    .dashboard-card { padding: 24px; margin-top: 30px; }
+    .fade-in { animation: fadeIn 0.8s ease-in-out; }
+    @keyframes fadeIn { from {opacity:0; transform:translateY(-5px);} to {opacity:1; transform:translateY(0);} }
+
+    .welcome-section {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: #4f46e5;
+      border-radius: 12px;
+      color: white;
+      margin-bottom: 30px;
+    }
+    .profile-mini {
+      display: flex; align-items: center; background-color: #6366f1;
+      padding: 8px 14px; border-radius: 20px; cursor: pointer; color: white;
+    }
+    .avatar {
+      background-color: white; color: #4f46e5; width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; font-weight: 700; margin-right: 10px;
+    }
+    .username { font-weight: 600; font-size: 14px; }
+    .wallet-balance { font-size: 12px; color: #e0e7ff; }
+    .arrow { font-size: 12px; margin-left: 10px; }
+
+    .grid { display: grid; gap: 16px; }
+    .grid-3 { grid-template-columns: repeat(3, minmax(0,1fr)); }
+    @media (max-width: 900px) { .grid-3 { grid-template-columns: 1fr; } }
+
+    .kpi {
+      background: white; border-radius: 12px; padding: 18px;
+      display: flex; flex-direction: column; gap: 6px; border: 1px solid #eef2ff;
+    }
+    .kpi .label { color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+    .kpi .value { font-size: 22px; font-weight: 700; color: #0f172a; }
+
+    .pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 4px 10px; border-radius: 9999px; font-size: 12px; font-weight: 600;
+    }
+    .pill.low { background:#dcfce7; color:#065f46; }
+    .pill.mid { background:#fef9c3; color:#854d0e; }
+    .pill.high{ background:#fee2e2; color:#b91c1c; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 14px; }
+    thead tr { background-color: #f3f4f6; }
+    th, td { text-align: left; padding: 12px; border-bottom: 1px solid #e5e7eb; }
+    tbody tr:last-child td { border-bottom: none; }
+
+    .chips { display:flex; flex-wrap:wrap; gap:8px; }
+    .chip {
+      background:#eef2ff; color:#3730a3; padding:6px 10px; border-radius:9999px; font-size:12px; font-weight:600;
+    }
+    .section-title { margin:0 0 12px 0; color:#1f2937; }
+    .muted { color:#6b7280; }
+
+    .tablink {
+      text-decoration:none; color:#0f172a; background:#dbeafe; border:1px solid #bfdbfe;
+      padding:8px 14px; border-radius:9999px; font-weight:600;
+    }
+
+    .home-button {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background-color: #E0FFFF;
+      color: black;
+      padding: 12px 18px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: background-color 0.3s ease;
+      z-index: 999;
+    }
+
+    .home-button:hover {
+      background-color: #4f46e5;
+      color: white;
+    }
+    
+  </style>
+</head>
+<body class="fade-in">
+  <main>
+    <!-- Header (mirrors homepage) -->
+    <div class="card welcome-section">
+      <div>
+        <img src="{{ url_for('static', filename='logo.png') }}" alt="SMU FinWallet Logo" style="height: 70px; object-fit: contain;" />
+      </div>
+      <div class="profile-mini">
+        <div class="avatar" id="avatarInitials">--</div>
+        <div>
+          <div class="username" id="userName">Loading...</div>
+          <div id="walletBalance" class="wallet-balance">Balance: $--.--</div>
+        </div>
+        <div class="arrow">▾</div>
+      </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-3">
+      <div class="kpi">
+        <div class="label">High-Risk (Today)</div>
+        <div class="value" id="kpiHighToday">0</div>
+        <div class="muted">Flagged transactions since 00:00</div>
+      </div>
+      <div class="kpi">
+        <div class="label">Avg Fraud Risk (7d)</div>
+        <div class="value"><span id="kpiAvgRisk">0.0%</span></div>
+        <div class="muted">Mean of fraud_score last 7 days</div>
+      </div>
+      <div class="kpi" style="display:flex; flex-direction:column;">
+        <div class="label">Pending Verifications</div>
+        <div style="display:flex; align-items:center; justify-content:space-between;">
+          <div class="value" id="kpiPending">0</div>
+          <a class="tablink" href="/verify-otp?reason=suspicious">Review & Verify</a>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Charts -->
+<div class="grid" style="grid-template-columns: 2fr 1fr; ">
+  <!-- Card 1 -->
+  <div class="dashboard-card" style="display:flex; flex-direction:column; justify-content:center;">
+    <h2 class="section-title">Fraud Analytics</h2>
+    <div class="grid" style="grid-template-columns: 1.2fr 1fr; align-items:center;">
+      <div style="height:160px;">
+        <canvas id="trendChart"></canvas>
+      </div>
+      <div style="height:160px;">
+        <canvas id="bucketChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Card 2: FraudSight logo + description (RIGHT) -->
+  <div class="dashboard-card" 
+     style="display:grid; grid-template-columns: 140px 1fr; align-items:center; gap:16px; text-align:left; background-color: #bae6fd;">
+  
+      <!-- left: logo + title -->
+      <div style="display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <lottie-player
+          src="{{ url_for('static', filename='aibot.json') }}"
+          background="transparent"
+          speed="1"
+          style="width:100px; height:100px; margin-bottom:8px;"
+          loop
+          autoplay>
+        </lottie-player>
+        <h3 style="margin:0; color:#111827;">FraudSight</h3>
+      </div>
+
+      <!-- right: description -->
+      <div style="color:#374151; font-size:14px; line-height:1.5;">
+        <p style="margin:0;">
+          <strong>FraudSight</strong> uses <b>XGBoost</b> to detect fraud in real-time across every transaction.  
+          <br><br>Each transaction is analysed for suspicious activity and flagged for review when risk exceeds a threshold.
+        </p>
+      </div>
+    </div>
+
+</div>
+
+    <!-- Flagged Table -->
+    <div class="dashboard-card">
+      <h2 class="section-title">Flagged Transactions ⚠️ </h2>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date/Time</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Risk</th>
+              <th>Status</th>
+              <th>Why flagged</th>
+            </tr>
+          </thead>
+          <tbody id="flaggedTbody">
+            <tr><td colspan="6" class="muted">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- All (latest 100) -->
+    <div class="dashboard-card">
+      <h2 class="section-title">All Transactions (Latest)</h2>
+      <div style="overflow-x:auto;">
+        <table>
+          <thead>
+            <tr>
+              <th>Date/Time</th>
+              <th>Type</th>
+              <th>Amount</th>
+              <th>Risk</th>
+              <th>Flagged</th>
+            </tr>
+          </thead>
+          <tbody id="allTbody">
+            <tr><td colspan="5" class="muted">Loading…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <!-- SDKs -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+
+  <script>
+    // Same Firebase app config as homepage
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHs2gr92xsPcPGgpvtlepvSBjYvgSOAgw",
+      authDomain: "smu-fintech-mvp-2025.firebaseapp.com",
+      projectId: "smu-fintech-mvp-2025",
+      storageBucket: "smu-fintech-mvp-2025.appspot.com",
+      messagingSenderId: "792829799933",
+      appId: "1:792829799933:web:71532891d3f1e11b33bd94"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    const THRESHOLD = 0.5; // keep in sync with backend env if you like
+
+    let trendChart, bucketChart;
+
+    function pillClass(score) {
+      if (score >= 0.5) return "pill high";
+      if (score >= 0.1) return "pill mid";
+      return "pill low";
+    }
+    function riskLabel(score) {
+      if (score >= 0.5) return "High";
+      if (score >= 0.1) return "Medium";
+      return "Low";
+    }
+    function cents(n){ return Math.abs(parseFloat(n||0)).toFixed(2); }
+
+      auth.onAuthStateChanged(async (user) => {
+        if (!user) { window.location.href = "/login"; return; }
+
+        // Header mini-profile (unchanged)
+        const udoc = await db.collection("users").doc(user.uid).get();
+        const u = udoc.data() || {};
+        const name = u.name || "User";
+        document.getElementById("userName").textContent = name;
+        document.getElementById("avatarInitials").textContent = name.split(' ').map(n => n[0]).join('').toUpperCase();
+        document.getElementById("walletBalance").textContent = `Balance: $${parseFloat(u.balance||0).toFixed(2)}`;
+
+        // ✅ Always fetch latest 100, newest first
+        const txRef = db.collection("users").doc(user.uid).collection("transactions");
+        const snap = await txRef.orderBy("timestamp","desc").limit(100).get();
+        const allTx = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+        // ✅ Client-side flagged filter (avoids Firestore composite index requirement)
+        const flagged = allTx.filter(t => t.isFlagged === true);
+
+        renderFlagged(flagged);
+        renderAll(allTx);
+
+        // (Optional) If your backend returns analytics, you can keep that call.
+        // Otherwise compute a simple 7-day risk average here from allTx:
+        renderKpisAndChartsFrom(allTx);
+      });
+
+      function renderKpisAndChartsFrom(allTx){
+        // KPIs
+        const startOfToday = new Date(); startOfToday.setHours(0,0,0,0);
+        const highToday = allTx.filter(t => t.isFlagged && toJSDate(t.timestamp) >= startOfToday).length;
+        const pending = allTx.filter(t => (t.verified === false) || t.label === "pending").length;
+        document.getElementById("kpiHighToday").textContent = highToday;
+        document.getElementById("kpiPending").textContent = pending;
+
+        // Charts: build daily avg fraud_score for last ~7 days
+        const byDay = {};
+        for (const t of allTx){
+          const d = toJSDate(t.timestamp);
+          const key = d.toLocaleDateString('en-SG');
+          const s = Number(t.fraud_score || 0);
+          if (!Number.isFinite(s)) continue;
+          (byDay[key] ||= []).push(s*100);
+        }
+        const days = Object.keys(byDay).slice(0,7).reverse();
+        const trend = days.map(k => byDay[k].reduce((a,b)=>a+b,0)/byDay[k].length);
+
+        const flat = Object.values(byDay).flat();
+        const avg7 = flat.length ? (flat.reduce((a,b)=>a+b,0)/flat.length) : 0;
+        document.getElementById("kpiAvgRisk").textContent = `${avg7.toFixed(1)}%`;
+
+        // Buckets
+        let low=0, mid=0, high=0;
+        flat.forEach(v => { if (v>50) high++; else if (v>=10) mid++; else low++; });
+
+        // Draw/refresh charts
+        drawTrend(days, trend);
+        drawBuckets([low, mid, high]);
+      }
+
+      function toJSDate(ts){
+        return ts?.seconds ? new Date(ts.seconds*1000) : new Date(ts);
+      }
+
+    function renderFlagged(items){
+      const tbody = document.getElementById("flaggedTbody");
+      tbody.innerHTML = "";
+      if (!items.length){
+        tbody.innerHTML = `<tr><td colspan="6" class="muted">No flagged transactions 🎉</td></tr>`;
+        document.getElementById("kpiHighToday").textContent = 0;
+        document.getElementById("kpiPending").textContent = 0;
+        return;
+      }
+      // Count today's flagged + pending
+      const today = new Date(); today.setHours(0,0,0,0);
+      let todayCount = 0, pending = 0;
+
+      items.sort((a,b)=>{
+        const ta = a.timestamp?.seconds ? a.timestamp.seconds*1000 : a.timestamp;
+        const tb = b.timestamp?.seconds ? b.timestamp.seconds*1000 : b.timestamp;
+        return tb - ta;
+      });
+
+      for (const t of items){
+        const ts = t.timestamp?.seconds ? t.timestamp.seconds*1000 : t.timestamp;
+        const dt = new Date(ts);
+        if (dt >= today) todayCount++;
+
+        // pending if not verified OR (label == "pending")
+        const isPending = (t.verified === false) || (t.label === "pending");
+        if (isPending) pending++;
+
+        const score = typeof t.fraud_score === "number" ? t.fraud_score : parseFloat(t.fraud_score||0);
+        const riskPct = Number.isFinite(score) ? (score*100).toFixed(1)+"%" : "–";
+        const amount = cents(t.amount);
+        const why = buildWhyChips(t);
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${dt.toLocaleString('en-SG')}</td>
+          <td>${t.type || "UNKNOWN"}</td>
+          <td style="font-weight:600; color:${(t.type||"").includes("Received")||t.type==="CASH_IN"?"green":"red"}">
+            ${(t.type||"").includes("Received")||t.type==="CASH_IN" ? "+" : "-"}$${amount}
+          </td>
+          <td>
+            <span class="${pillClass(score)}">${riskLabel(score)} • ${riskPct}</span>
+          </td>
+          <td>${isPending ? '<span class="pill mid">Pending</span>' : '<span class="pill low">Verified</span>'}</td>
+          <td><div class="chips">${why}</div></td>
+        `;
+        tbody.appendChild(tr);
+      }
+      document.getElementById("kpiHighToday").textContent = todayCount;
+      document.getElementById("kpiPending").textContent = pending;
+    }
+
+    function renderAll(items){
+      const tbody = document.getElementById("allTbody");
+      tbody.innerHTML = "";
+      if (!items.length){
+        tbody.innerHTML = `<tr><td colspan="5" class="muted">No transactions</td></tr>`;
+        return;
+      }
+      items.sort((a,b)=>{
+        const ta = a.timestamp?.seconds ? a.timestamp.seconds*1000 : a.timestamp;
+        const tb = b.timestamp?.seconds ? b.timestamp.seconds*1000 : b.timestamp;
+        return tb - ta;
+      });
+      for (const t of items){
+        const ts = t.timestamp?.seconds ? t.timestamp.seconds*1000 : t.timestamp;
+        const dt = new Date(ts);
+        const score = typeof t.fraud_score === "number" ? t.fraud_score : parseFloat(t.fraud_score||0);
+        const riskPct = Number.isFinite(score) ? (score*100).toFixed(1)+"%" : "–";
+        const amount = cents(t.amount);
+        const flagged = t.isFlagged ? '<span class="pill high">Yes</span>' : '<span class="pill low">No</span>';
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${dt.toLocaleString('en-SG')}</td>
+          <td>${t.type || "UNKNOWN"}</td>
+          <td>$${amount}</td>
+          <td><span class="${pillClass(score)}">${riskLabel(score)} • ${riskPct}</span></td>
+          <td>${flagged}</td>
+        `;
+        tbody.appendChild(tr);
+      }
+    }
+
+    function renderAnalytics(rows){
+      if (!Array.isArray(rows) || !rows.length){
+        // no-op, keep empty charts
+        return;
+      }
+      // Expect rows: {date:"YYYY-MM-DD", amount, wallet_ratio, sender_freq, receiver_freq, type}
+      // Also try to fetch live flagged/score to compute stats:
+      // Compute 7d avg risk from Firestore again (since /api/fraudsight-data doesn’t include score yet)
+      // Simplify: we approximate via pulling the last 7 days from the already-fetched “all” table DOM:
+      const dates = {};
+      const allRows = Array.from(document.querySelectorAll("#allTbody tr"));
+      for (const r of allRows){
+        const cells = r.querySelectorAll("td");
+        if (cells.length < 5) continue;
+        const dstr = cells[0].textContent.split(",")[0]; // date part
+        const riskText = cells[3].innerText.match(/([\d.]+)%/);
+        const risk = riskText ? parseFloat(riskText[1]) : NaN;
+        if (!dates[dstr]) dates[dstr] = [];
+        if (!isNaN(risk)) dates[dstr].push(risk);
+      }
+      const keys = Object.keys(dates).slice(0,7).reverse(); // last ~7 dates
+      const trend = keys.map(k => {
+        const arr = dates[k]; if (!arr || !arr.length) return 0;
+        return arr.reduce((a,b)=>a+b,0)/arr.length;
+      });
+      // avg risk kpi
+      const flat = Object.values(dates).flat();
+      const avg7 = flat.length ? (flat.reduce((a,b)=>a+b,0)/flat.length) : 0;
+      document.getElementById("kpiAvgRisk").textContent = `${avg7.toFixed(1)}%`;
+
+      // Buckets (Low <10%, Mid 10–50%, High >50%)
+      let low=0, mid=0, high=0;
+      flat.forEach(v=>{ if (v>50) high++; else if (v>=10) mid++; else low++; });
+
+      // Render charts
+      const ctx1 = document.getElementById("trendChart");
+      const ctx2 = document.getElementById("bucketChart");
+      if (trendChart) trendChart.destroy();
+      if (bucketChart) bucketChart.destroy();
+
+      trendChart = new Chart(ctx1, {
+        type: 'line',
+        data: {
+          labels: keys,
+          datasets: [{ label: 'Avg Risk %', data: trend }]
+        },
+        options: { responsive:true, plugins:{ legend:{display:false} }, scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>v+'%' } } } }
+      });
+
+      bucketChart = new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+          labels: ['Low (<10%)','Medium (10–50%)','High (>50%)'],
+          datasets: [{ data: [low, mid, high] }]
+        },
+        options: { responsive:true, plugins:{ legend:{ position:'bottom' } } }
+      });
+    }
+
+    function drawTrend(labels, data){
+  const ctx = document.getElementById("trendChart");
+  if (!ctx) return;
+  if (trendChart) trendChart.destroy();
+  trendChart = new Chart(ctx, {
+    type: 'line',
+    data: { labels, datasets: [{ label: 'Avg Risk %', data }] },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,   // important
+      plugins: { legend: { display: false } },
+      scales: { y: { beginAtZero: true, ticks: { callback: v => v + '%' } } }
+    }
+  });
+}
+
+function drawBuckets(values){  // values = [low, mid, high]
+  const ctx = document.getElementById("bucketChart");
+  if (!ctx) return;
+  if (bucketChart) bucketChart.destroy();
+
+  bucketChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Low (<10%)', 'Medium (10–50%)', 'High (>50%)'],
+      datasets: [{
+        data: values,
+        // green, yellow, red
+        backgroundColor: ['#4ade80', '#facc15', '#f87171'], 
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,     // keep respecting the 160px container height
+      cutout: '60%',                  // optional: nicer ring
+      plugins: {
+        legend: {
+          position: 'right',          // <-- legend beside the circle
+          align: 'center',
+          labels: {
+            usePointStyle: true,
+            boxWidth: 10,
+            padding: 14
+          }
+        }
+      },
+      layout: { padding: { right: 8 } } // small breathing room for legend
+    }
+  });
+}
+    // Simple explainability: infer reasons from stored feature values
+    function buildWhyChips(t){
+      const chips = [];
+      const wr = Number(t.wallet_ratio||0);
+      const hr = Number(t.hour_of_day||new Date().getHours());
+      const amt = Number(t.amount||0);
+      const rf = Number(t.receiver_freq||0);
+      const sf = Number(t.sender_freq||0);
+
+      if (wr > 0.8) chips.push(`<span class="chip">High Wallet Ratio</span>`);
+      if (amt >= 1000) chips.push(`<span class="chip">Unusual Large Amount</span>`);
+      if (hr >= 0 && (hr <= 5 || hr >= 23)) chips.push(`<span class="chip">Unusual Hour</span>`);
+      if (rf > 10) chips.push(`<span class="chip">High Receiver Frequency</span>`);
+      if (sf > 20) chips.push(`<span class="chip">High Sender Activity</span>`);
+      if (/CASH_OUT|TRANSFER/.test(String(t.type||""))) chips.push(`<span class="chip">Risky Transaction Type</span>`);
+
+      return chips.join("");
+    }
+  </script>
+
+  <a href="/home" class="home-button">🏠 Homepage</a>
+</body>
+</html>

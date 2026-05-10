@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PiggyPay - FinWallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #e0e7ff, #f3f4ff);
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-5px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .section {
+      max-width: 400px;
+      margin: 80px auto;
+      background: #4f46e5;
+      border-radius: 20px;
+      padding: 32px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+      text-align: center;
+    }
+
+    h2 {
+      margin-bottom: 24px;
+      font-size: 22px;
+      color: white;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    input {
+      padding: 14px 18px;
+      font-size: 16px;
+      border-radius: 12px;
+      border: 1px solid #cbd5e1;
+      outline: none;
+      background-color: #f8fafc;
+    }
+
+    button {
+      padding: 14px;
+      background-color: #eef2ff;
+      color: #4f46e5;
+      font-weight: 600;
+      font-size: 16px;
+      border: none;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #4338ca;
+      color: white;
+    }
+
+    .summary-card {
+      background: #ffffff;
+      padding: 24px;
+      border-radius: 20px;
+      margin-top: 24px;
+      text-align: left;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+      color: #1e293b;
+    }
+
+    .summary-card p {
+      margin: 6px 0;
+      font-size: 15px;
+    }
+
+    .summary-card h2 {
+      color: #4f46e5;
+      margin-bottom: 16px;
+    }
+
+    .lottie-wrapper {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 12px;
+    }
+
+    /* --- Fraud Modal Styles (Unified) --- */
+    .fraud-modal {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background: #ffffff;
+      padding: 2.5em 2em;
+      border-radius: 20px;
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+      z-index: 9999;
+      width: 90%;
+      max-width: 440px;
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+      animation: fadeInScale 0.4s ease-out;
+    }
+
+    .fraud-alert {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin-bottom: 1em;
+    }
+
+    .fraud-title {
+      color: #dc2626;
+      font-size: 22px;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .fraud-message {
+      color: #111827;
+      font-size: 16px;
+      font-weight: 500;
+      line-height: 1.5;
+      margin: 1em 0 1.4em;
+    }
+
+    .fraud-note {
+      font-size: 14px;
+      color: #6b7280;
+    }
+
+    .friends-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 10px;
+    }
+
+    .friend-bubble {
+      width: 90px;
+      height: 110px;
+      text-align: center;
+      border-radius: 16px;
+      background: whitesmoke;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 10px;
+      cursor: pointer;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .friend-bubble:hover {
+      transform: translateY(-4px);
+    }
+
+    .avatar-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: #4f46e5;
+      color: whitesmoke;
+      font-weight: bold;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+    }
+
+    .friend-name {
+      font-size: 12px;
+      color: #1e3a8a;
+      font-weight: 500;
+      word-wrap: break-word;
+    }
+
+    .home-button {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background-color: #E0FFFF;
+      color: black;
+      padding: 12px 18px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: background-color 0.3s ease;
+      z-index: 999;
+    }
+
+    .home-button:hover {
+      background-color: #4f46e5;
+      color: white;
+    }
+
+  </style>
+</head>
+
+<body>
+   <div class="page-layout">
+    <div class="section">
+      <div class="lottie-wrapper">
+        <lottie-player
+          src="{{ url_for('static', filename='flashpay.json') }}"
+          background="transparent"
+          speed="1"
+          style="width: 180px; height: 210px;"
+          loop
+          autoplay>
+        </lottie-player>
+      </div>
+      <h2>PiggyPay</h2>
+
+      <div id="result"></div>
+
+      <div id="form-container">
+        <form id="payment-form">
+          <input type="text" id="contact" placeholder="e.g. 91234567" required>
+          <input type="number" step="0.01" min="0.01" id="amount" placeholder="Enter amount" required>
+          <button type="submit">Send Now</button>
+        </form>
+      </div>
+
+      <div style="margin-top: 32px;">
+        <h3 style="color: white;">Or select a friend:</h3>
+        <div id="friendsList" class="friends-wrapper" style="margin-top: 12px;"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- Unified Fraud Modal -->
+  <div id="fraud-modal" class="fraud-modal">
+    <lottie-player
+      src="{{ url_for('static', filename='alert.json') }}"
+      background="transparent"
+      speed="1"
+      style="width: 100px; height: 100px; margin-bottom: 16px;"
+      loop
+      autoplay>
+    </lottie-player>
+
+    <div class="fraud-alert">
+      <h2 class="fraud-title">Suspicious Transaction</h2>
+    </div>
+
+    <p id="fraud-phone-msg" class="fraud-message"></p>
+    <p class="fraud-note">You’ll be redirected to the homepage shortly...</p>
+  </div>
+
+  <!-- Firebase Setup -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHs2gr92xsPcPGgpvtlepvSBjYvgSOAgw",
+      authDomain: "smu-fintech-mvp-2025.firebaseapp.com",
+      projectId: "smu-fintech-mvp-2025",
+      storageBucket: "smu-fintech-mvp-2025.appspot.com",
+      messagingSenderId: "792829799933",
+      appId: "1:792829799933:web:71532891d3f1e11b33bd94"
+    };
+    firebase.initializeApp(firebaseConfig);
+  </script>
+
+  <script>
+  const auth = firebase.auth();
+  const db = firebase.firestore();
+
+  auth.onAuthStateChanged(user => {
+    if (!user) return;
+
+    db.collection("users").doc(user.uid).collection("friends").get()
+      .then(snapshot => {
+        const friends = snapshot.docs.map(doc => doc.data());
+        displayFriends(friends);
+      });
+  });
+
+  function displayFriends(friends) {
+    const list = document.getElementById("friendsList");
+    list.innerHTML = "";
+
+    if (friends.length === 0) {
+      list.innerHTML = `<p style="color: white;">No Friends Added</p>`;
+      return;
+    }
+
+    friends.forEach(friend => {
+      const bubble = document.createElement("div");
+      bubble.className = "friend-bubble";
+
+      const initials = friend.name ? friend.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : "?";
+
+      bubble.innerHTML = `
+        <div class="avatar-circle">${initials}</div>
+        <div class="friend-name">${friend.name}<br><small>${friend.phone}</small></div>
+      `;
+
+      bubble.onclick = () => {
+        // Fill the form with selected friend's data
+        document.querySelector('h2').textContent = `PiggyPay to ${friend.name}`;
+        document.getElementById('contact').value = friend.phone.replace('+65', '');
+      };
+
+      list.appendChild(bubble);
+    });
+  }
+</script>
+
+
+  <!-- PiggyPay Logic -->
+  <script>
+    async function submitTransaction(txType, amount, contact = null) {
+      const user = firebase.auth().currentUser;
+      if (!user) return;
+      const idToken = await user.getIdToken();
+
+      const res = await fetch("/api/transaction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken, amount, txType, contact })
+      });
+
+      const data = await res.json();
+
+      if (data.flagged) {
+        const modal = document.getElementById("fraud-modal");
+        modal.style.display = "flex";
+        document.getElementById("fraud-phone-msg").textContent =
+          `Your transfer of $${amount.toFixed(2)} is flagged for fraud. Please verify this transaction on the homepage!`;
+        setTimeout(() => window.location.href = "/home", 5000);
+        return;
+      }
+
+      if (data.success) {
+        const score = (data.fraud_score || 0).toFixed(3);
+        window.location.href = `/success_piggypay?fraud=${data.fraud ? 1 : 0}&score=${score}`;
+      } else {
+        document.getElementById("result").innerHTML =
+          `<div class="summary-card">
+            <h2>❌ Transfer Failed</h2>
+            <p>${data.message || "Transaction failed."}</p>
+          </div>`;
+      }
+    }
+
+    async function handleFlashPay(e) {
+      e.preventDefault();
+      const contactInput = document.getElementById("contact").value.trim();
+      const contact = contactInput.startsWith("+65") ? contactInput : `+65${contactInput}`;
+      const amount = parseFloat(document.getElementById("amount").value);
+
+      if (amount < 0.01) {
+        document.getElementById("result").innerHTML =
+          `<div class="summary-card"><h2>⚠️ Invalid Amount</h2><p>Amount must be greater than 0.</p></div>`;
+        return;
+      }
+
+      if (contact === window.currentUserPhone) {
+        document.getElementById("result").innerHTML =
+          `<div class="summary-card"><h2>⚠️ Invalid Transfer</h2><p>You cannot transfer funds to your own number.</p></div>`;
+        return;
+      }
+
+      try {
+        await submitTransaction("TRANSFER", amount, contact);
+      } catch (err) {
+        console.error("PiggyPay error:", err);
+        document.getElementById("result").innerHTML =
+          `<div class="summary-card"><h2>Error</h2><p>❌ Could not process transfer.</p></div>`;
+      }
+    }
+
+    document.getElementById("payment-form").addEventListener("submit", handleFlashPay);
+
+  </script>
+
+  <script>
+  const params = new URLSearchParams(window.location.search);
+  const name = params.get('name');
+  const phone = params.get('phone');
+
+  if (name && phone) {
+    document.querySelector('h2').textContent = `PiggyPay to ${name}`;
+    document.getElementById('contact').value = phone.replace('+65', '');
+  }
+</script>
+<a href="/home" class="home-button">🏠 Homepage</a>
+
+</body>
+</html>

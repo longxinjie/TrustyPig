@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Wallet - SMU FinWallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <style>
+
+    body {
+      margin: 0;
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #e0e7ff, #f3f4ff);
+    }
+
+    .section {
+      background: linear-gradient(to right, #e0e7ff, #f3f4ff);;
+      margin: 24px;
+      border-radius: 16px;
+      padding: 32px;
+    }
+
+    .wallet-header-card {
+      flex: 2;
+      min-width: 240px;
+      padding: 20px 24px;
+      border-radius: 20px;
+      background: #4f46e5;
+      padding: 30px;
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+
+    .wallet-actions-inline {
+      flex: 3;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .wallet-header-card h2 {
+      font-size: 16px;
+      font-family: 'Roboto Mono', monospace;
+      margin: 0;
+      color: #e5e5f0;
+    }
+
+    #wallet-balance {
+      margin-top: 10px;
+      font-size: 32px;
+      font-weight: 600;
+      color: white;
+    }
+
+    .linked-card {
+      margin-top: 32px;
+      margin-left: 0;
+      padding: 24px;
+      border-radius: 20px;
+      color: white;
+      width: 300px;
+      height: 160px;
+      box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .card-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .expiry {
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 1px;
+      margin-left: 16px;
+    }
+
+    .brand-name {
+      display: flex;
+      align-items: center;
+      background-color: white;
+      padding: 4px 10px;
+      border-radius: 6px;
+      text-transform: uppercase;
+      font-weight: bold;
+      font-size: 14px;
+      margin-right: 16px;
+    }
+
+    .brand-logo {
+      height: 16px;
+      margin-right: 6px;
+    }
+
+    .transaction-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      font-family: sans-serif;
+      background-color: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+
+    .transaction-table th,
+    .transaction-table td {
+      padding: 14px 16px;
+      text-align: left;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .transaction-table th {
+      background-color: #f9f9f9;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .status-safe {
+      color: #059669;
+      background-color: #d1fae5;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 14px;
+      display: inline-block;
+    }
+
+    .status-fraud {
+      color: #dc2626;
+      background-color: #fee2e2;
+      padding: 4px 12px;
+      border-radius: 999px;
+      font-weight: 600;
+      font-size: 14px;
+      display: inline-block;
+    }
+
+
+    /* Card background colors */
+    .visa {
+      background: linear-gradient(135deg, #0077b6, #023e8a);
+    }
+    .mastercard {
+      background: linear-gradient(135deg, #111111, #222222);
+    }
+    .amex {
+      background: linear-gradient(135deg, #6c757d, #495057);
+    }
+
+    /* Brand color overrides */
+    .visa .brand-name {
+      color: #0077b6;
+    }
+    .mastercard .brand-name {
+      color: #ff5f00;
+    }
+    .amex .brand-name {
+      color: #495057;
+    }
+
+    .card-number-wrapper {
+      margin-top: 20px;
+      margin-bottom: 24px;
+    }
+
+    .card-number {
+      font-size: 18px;
+      letter-spacing: 2px;
+      text-align: center;
+    }
+
+    .fade-in {
+      animation: fadeIn 0.8s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .wallet-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 24px;
+      margin-top: 36px;
+    }
+
+    .wallet-row {
+      display: flex;
+      gap: 24px;
+      align-items: stretch;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+
+    .action-card {
+      width: 180px;
+      height: 140px;
+      flex: 1;
+      background-color: #F0F8FF;
+      border-radius: 20px;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .action-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    .action-card img {
+      width: 64px;
+      height: auto;
+      margin-bottom: 16px;
+    }
+
+    .home-button {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background-color: #E0FFFF;
+      color: black;
+      padding: 12px 18px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: background-color 0.3s ease;
+      z-index: 999;
+    }
+
+    .home-button:hover {
+      background-color: #4f46e5;
+      color: white;
+    }
+
+    .recent-transactions-card {
+      background: white;
+      padding: 20px 36px 20px ;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      margin-top: 40px;
+    }
+
+    .fraudsight-button {
+      position: fixed;
+      bottom: 100px; 
+      right: 24px;
+      background-color: #bae6fd;
+      padding: 12px 18px;
+      border-radius: 20px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+      text-decoration: none;
+      color: black;
+      font-weight: 600;
+      font-size: 16px;
+      z-index: 999;
+      width: 140px;
+      height: 140px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .fraudsight-button:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    }
+    .fraudsight-button lottie-player {
+      width: 80px;
+      height: 80px;
+      margin-bottom: 6px;
+    }
+
+
+  </style>
+</head>
+
+<body class="fade-in">
+  <div class="section">
+    <div class="wallet-row">
+      <div class="wallet-header-card">
+        <h2>My Wallet Balance:</h2>
+        <div id="wallet-balance">$0.00</div>
+      </div>
+      <div class="wallet-actions-inline">
+        <a class="action-card" href="/piggypay">
+          <lottie-player
+            src="{{ url_for('static', filename='flashpay.json') }}"
+            background="transparent"
+            speed="1"
+            style="width: 100px; height: 100px;"
+            loop
+            autoplay>
+          </lottie-player>
+          <strong>PiggyPay</strong>
+        </a>
+        <a class="action-card" href="/topup">
+          <lottie-player
+            src="{{ url_for('static', filename='topup.json') }}"
+            background="transparent"
+            speed="1"
+            style="width: 100px; height: 100px;"
+            loop
+            autoplay>
+          </lottie-player>
+          <strong>Top-Up</strong>
+        </a>
+        <a class="action-card" href="/withdraw">
+          <lottie-player
+            src="{{ url_for('static', filename='withdraw.json') }}"
+            background="transparent"
+            speed="1"
+            style="width: 100px; height: 100px;"
+            loop
+            autoplay>
+          </lottie-player>
+          <strong>Withdraw</strong>
+        </a>
+    </div>
+  </div>
+
+
+      <div class="linked-card" id="linked-card" style="display:none;">
+        <div class="card-number-wrapper">
+          <div class="card-number" id="linked-card-number"></div>
+        </div>
+        <div class="card-footer">
+          <div class="expiry" id="linked-card-expiry"></div>
+          <div class="brand-name" id="linked-card-brand">
+            <img id="brand-logo" alt="" class="brand-logo" />
+            <span id="brand-text"></span>
+          </div>
+        </div>
+      </div>
+
+
+  
+  <div class="recent-transactions-card">
+    <h2>Recent Transactions</h2>
+    <table class="transaction-table">
+      <thead>
+        <tr>
+          <th>Transaction Type</th>
+          <th>Amount</th>
+          <th>Date</th>
+          <th>Status</th>
+          <th>Fraud Risk</th>
+        </tr>
+      </thead>
+      <tbody id="transactions-table-body">
+        <!-- JavaScript will populate this -->
+      </tbody>
+    </table>
+  </div>
+  </div>
+
+
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHs2gr92xsPcPGgpvtlepvSBjYvgSOAgw",
+      authDomain: "smu-fintech-mvp-2025.firebaseapp.com",
+      projectId: "smu-fintech-mvp-2025",
+      storageBucket: "smu-fintech-mvp-2025.appspot.com",
+      messagingSenderId: "792829799933",
+      appId: "1:792829799933:web:71532891d3f1e11b33bd94"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+
+    auth.onAuthStateChanged(async (user) => {
+      const cardEl = document.getElementById("linked-card");
+      const numberEl = document.getElementById("linked-card-number");
+      const brandNameContainer = document.getElementById("linked-card-brand");
+      const brandText = document.getElementById("brand-text");
+      const brandLogo = document.getElementById("brand-logo");
+      const expiryEl = document.getElementById("linked-card-expiry");
+
+      if (!user) {
+        cardEl.style.display = "none";
+        return;
+      }
+
+      try {
+        const userDoc = await db.collection("users").doc(user.uid).get();
+        const balance = userDoc.exists ? userDoc.data().balance || 0 : 0;
+        document.getElementById("wallet-balance").textContent = `$${balance.toFixed(2)}`;
+      } catch (e) {
+        console.error("Failed to load wallet balance", e);
+      }
+
+      try {
+        const idToken = await user.getIdToken();
+        const response = await fetch("http://localhost:5000/api/get-linked-card", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ idToken }),
+        });
+
+        const result = await response.json();
+
+        if (result.error) {
+          cardEl.style.display = "none";
+        } else {
+          const formattedNumber = `**** **** **** ${result.last4}`;
+          numberEl.textContent = formattedNumber;
+          brandText.textContent = result.brand || "CARD";
+
+          expiryEl.textContent = result.exp_month && result.exp_year
+            ? `${String(result.exp_month).padStart(2, "0")}/${String(result.exp_year).slice(-2)}`
+            : "MM/YY";
+
+          // Reset classes and logo
+          cardEl.classList.remove("visa", "mastercard", "amex");
+          brandLogo.src = "";
+
+          if (result.brand) {
+            const brand = result.brand.toLowerCase();
+            if (brand.includes("visa")) {
+              cardEl.classList.add("visa");
+              brandLogo.src = "https://img.icons8.com/color/48/visa.png";
+            } else if (brand.includes("mastercard")) {
+              cardEl.classList.add("mastercard");
+              brandLogo.src = "https://img.icons8.com/color/48/mastercard-logo.png";
+            } else if (brand.includes("amex") || brand.includes("american")) {
+              cardEl.classList.add("amex");
+              brandLogo.src = "https://img.icons8.com/color/48/amex.png";
+            }
+          }
+
+          cardEl.style.display = "block";
+        }
+      } catch (err) {
+        console.error("Failed to load card info", err);
+        cardEl.style.display = "none";
+      }
+      await loadTransactions(user); 
+    });
+
+    
+
+async function loadTransactions(user) {
+  const transactionsTableBody = document.getElementById("transactions-table-body");
+
+  db.collection("users")
+    .doc(user.uid)
+    .collection("transactions")
+    .orderBy("timestamp", "desc")
+    .limit(5)
+    .get()
+    .then((querySnapshot) => {
+      transactionsTableBody.innerHTML = "";
+      querySnapshot.forEach((doc) => {
+        const data = doc.data();
+
+        const type = data.type || "N/A";
+        const amountRaw = parseFloat(data.amount);
+        const amount = Math.abs(amountRaw).toFixed(2);
+        const isPositive = type === "CASH_IN" || type.includes("Received");
+        const color = isPositive ? "green" : "red";
+        const sign = isPositive ? "+" : "-";
+
+        const date = data.timestamp?.toDate().toLocaleString() || "N/A";
+        const fraudScore = data.fraud_score !== undefined
+          ? `${(data.fraud_score * 100).toFixed(1)}%`
+          : "N/A";
+        const isFraud = data.fraud === true;
+        const status = isFraud ? "Fraudulent" : "Safe";
+        const statusClass = isFraud ? "status-fraud" : "status-safe";
+
+        const row = document.createElement("tr");
+        row.innerHTML = `
+          <td>${type}</td>
+          <td style="color: ${color}; font-weight: 600;">${sign}$${amount}</td>
+          <td>${date}</td>
+          <td><span class="${statusClass}">${status}</span></td>
+          <td>${fraudScore}</td>
+        `;
+
+        transactionsTableBody.appendChild(row);
+      });
+    })
+    .catch((error) => {
+      console.error("Error loading transactions:", error);
+    });
+}
+
+
+
+
+  </script>
+  <a href="/home" class="home-button">🏠 Homepage</a>
+  <a href="/fraudsight" class="fraudsight-button">
+    <lottie-player
+      src="{{ url_for('static', filename='aibot.json') }}"
+      background="transparent"
+      speed="1"
+      loop
+      autoplay>
+    </lottie-player>
+    FraudSight
+  </a>
+
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Top Up - SMU FinWallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/topup.css') }}" />
+</head>
+<body class="fade-in">
+  <div class="form-container">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="SMU FinWallet Logo" style="width: 350px; margin-bottom: 20px;" />
+    <div style="text-align: center; margin-bottom: 30px;">
+      <lottie-player
+        src="{{ url_for('static', filename='topup.json') }}"
+        background="transparent"
+        speed="1"
+        style="width: 120px; height: 120px; margin: 0 auto;"
+        loop
+        autoplay>
+      </lottie-player>
+      <h2 style="color: white; margin-top: 10px;">Top Up Wallet ($)</h2>
+    </div>
+
+    <div id="amount-buttons">
+      <button type="button" onclick="setAmount(10)">10</button>
+      <button type="button" onclick="setAmount(20)">20</button>
+      <button type="button" onclick="setAmount(30)">30</button>
+      <button type="button" onclick="setAmount(50)">50</button>
+      <button type="button" onclick="setAmount(100)">100</button>
+      <button type="button" onclick="setAmount(1000)">1000</button>
+    </div>
+
+    <input type="number" id="amount" placeholder="Enter Amount ($)" min="10" required />
+    <button onclick="handleTopUp()">Top Up with Saved Card</button>
+
+    <div id="status" class="status"></div>
+  </div>
+
+  <!-- Fraud Modal -->
+  <div id="fraud-modal" class="fraud-modal">
+    <lottie-player
+      src="{{ url_for('static', filename='alert.json') }}"
+      background="transparent"
+      speed="1"
+      style="width: 100px; height: 100px; margin-bottom: 16px;"
+      loop
+      autoplay>
+    </lottie-player>
+
+    <div class="fraud-alert">
+      <h2 class="fraud-title">Suspicious Transaction</h2>
+    </div>
+
+    <p id="fraud-phone-msg" class="fraud-message"></p>
+    <p class="fraud-note">You’ll be redirected to the homepage shortly...</p>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHs2gr92xsPcPGgpvtlepvSBjYvgSOAgw",
+      authDomain: "smu-fintech-mvp-2025.firebaseapp.com",
+      projectId: "smu-fintech-mvp-2025",
+      storageBucket: "smu-fintech-mvp-2025.appspot.com",
+      messagingSenderId: "792829799933",
+      appId: "1:792829799933:web:71532891d3f1e11b33bd94"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    function setAmount(value) {
+      document.getElementById("amount").value = value;
+    }
+
+    async function handleTopUp() {
+      const amount = parseFloat(document.getElementById("amount").value);
+      const statusEl = document.getElementById("status");
+
+      if (isNaN(amount) || amount < 10) {
+        statusEl.textContent = "❌ Minimum top-up is $10.";
+        return;
+      }
+
+      const user = firebase.auth().currentUser;
+      if (!user) {
+        statusEl.textContent = "❌ User not signed in.";
+        return;
+      }
+
+      try {
+        await submitTransaction("CASH_IN", amount);
+      } catch (err) {
+        console.error("Top-up error:", err);
+        statusEl.textContent = "❌ Something went wrong.";
+      }
+    }
+
+    async function submitTransaction(type, amount, recipientPhone = null) {
+      const user = firebase.auth().currentUser;
+      const idToken = await user.getIdToken();
+
+      const res = await fetch("/api/transaction", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idToken,
+          txType: type,
+          amount,
+          recipientPhone
+        })
+      });
+
+      const data = await res.json();
+
+      if (data.flagged) {
+        const modal = document.getElementById("fraud-modal");
+        modal.style.display = "flex";
+        document.getElementById("fraud-phone-msg").textContent =
+          `Your top-up of $${amount.toFixed(2)} is flagged for fraud. Please verify this transaction on the homepage!`;
+        setTimeout(() => window.location.href = "/home", 5000);
+        return;
+      }
+
+      if (data.success) {
+        window.location.href = `/success_topup?fraud=${data.fraud ? 1 : 0}&score=${parseFloat(data.fraud_score).toFixed(3)}`;
+      } else {
+        const statusEl = document.getElementById("status");
+        statusEl.textContent = `❌ ${data.message || "Top-up failed."}`;
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+</body>
+</html>

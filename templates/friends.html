@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Friends - FinWallet</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: linear-gradient(to right, #e0e7ff, #f3f4ff);
+      margin: 0;
+      padding: 0;
+      transition: opacity 0.6s ease-out;
+    }
+        body.fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    body.fade-out {
+      opacity: 0;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .page-layout {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      gap: 40px;
+    }
+
+    .main-card {
+      height: 500px;
+    }
+
+    .main-card {
+      background: #4f46e5;
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+      width: 470px;
+      text-align: center;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      color: white;
+      margin-top: 10px;
+    }
+
+    #searchInput {
+      margin: 0 auto 30px;
+      padding: 10px 16px;
+      font-size: 16px;
+      width: 300px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      outline: none;
+    }
+
+    .friends-wrapper {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+    }
+
+    .friend-bubble {
+      width: 90px;
+      height: 110px;
+      text-align: center;
+      border-radius: 16px;
+      background: whitesmoke;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      padding: 10px;
+      position: relative;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    .friend-bubble:hover {
+      transform: translateY(-4px);
+    }
+
+    .avatar-circle {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background-color: #4f46e5;
+      color: whitesmoke;
+      font-weight: bold;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+    }
+
+    .friend-name {
+      font-size: 12px;
+      color: #1e3a8a;
+      font-weight: 500;
+      word-wrap: break-word;
+    }
+
+    .cards-column {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      justify-content: space-between;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px 24px;
+      text-align: center;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: transform 0.2s;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      justify-content: center;
+      width: 250px;
+      height: 220px;
+      box-sizing: border-box;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+    }
+
+    .card h3 {
+      color: #4f46e5;
+      margin: 10px 0;
+    }
+
+    .home-button {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background-color: #E0FFFF;
+      color: black;
+      padding: 12px 18px;
+      border-radius: 50px;
+      text-decoration: none;
+      font-weight: 600;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      transition: background-color 0.3s ease;
+      z-index: 999;
+    }
+
+    .home-button:hover {
+      background-color: #4f46e5;
+      color: white;
+    }
+
+  </style>
+</head>
+<body class="fade-in">
+  <div class="page-layout">
+    <!-- Main friends card -->
+    <div class="main-card">
+      <img src="{{ url_for('static', filename='logo.png') }}" alt="SMU FinWallet Logo" style="width: 350px;" />
+      <img src="{{ url_for('static', filename='friends.png') }}" alt="Friends Icon" style="width: 196px; height: 148px;"/>
+      <input type="text" id="searchInput" placeholder="Find My Friends!">
+      <div id="friendsList" class="friends-wrapper"></div>
+    </div>
+
+    <!-- Right-side stacked cards -->
+    <div class="cards-column">
+      <div class="card" onclick="window.location.href='/add-friends'">
+        <lottie-player
+          src="{{ url_for('static', filename='add-friends.json') }}"
+          background="transparent"
+          speed="1"
+          style="width: 70px; height: 70px; margin-bottom: 8px;"
+          loop
+          autoplay>
+        </lottie-player>
+        <h3>Add Friend</h3>
+        <p>Send a friend request!</p>
+      </div>
+
+      <div class="card" onclick="window.location.href='/piggypay'">
+        <lottie-player
+          src="{{ url_for('static', filename='flashpay.json') }}"
+          background="transparent"
+          speed="1"
+          style="width: 70px; height: 70px; margin-bottom: 8px;"
+          loop
+          autoplay>
+        </lottie-player>
+        <h3>PiggyPay</h3>
+        <p>Send money instantly to your friends!</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyCHs2gr92xsPcPGgpvtlepvSBjYvgSOAgw",
+      authDomain: "smu-fintech-mvp-2025.firebaseapp.com",
+      projectId: "smu-fintech-mvp-2025",
+      storageBucket: "smu-fintech-mvp-2025.appspot.com",
+      messagingSenderId: "792829799933",
+      appId: "1:792829799933:web:71532891d3f1e11b33bd94"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+
+    let allFriends = [];
+
+    auth.onAuthStateChanged(user => {
+      if (!user) return window.location.href = "/login";
+      db.collection("users").doc(user.uid).collection("friends").get().then(snapshot => {
+        allFriends = snapshot.docs.map(doc => doc.data());
+        displayFriends(allFriends);
+      });
+    });
+
+    function displayFriends(friends) {
+  const list = document.getElementById("friendsList");
+  list.innerHTML = "";
+
+  if (friends.length === 0) {
+    list.innerHTML = `<p style="color: white; font-weight: 500;">No Friends Added</p>`;
+    return;
+  }
+
+  friends.forEach(friend => {
+    const bubble = document.createElement("div");
+    bubble.className = "friend-bubble";
+    bubble.style.cursor = "pointer";
+
+    const initials = friend.name ? friend.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase() : "?";
+
+    bubble.innerHTML = `
+      <div class="avatar-circle">${initials}</div>
+      <div class="friend-name">${friend.name}<br><small>${friend.phone}</small></div>
+    `;
+
+    // Add redirect on click
+    bubble.onclick = () => {
+      const nameEncoded = encodeURIComponent(friend.name);
+      const phoneEncoded = encodeURIComponent(friend.phone);
+      window.location.href = `/flashpay?name=${nameEncoded}&phone=${phoneEncoded}`;
+    };
+
+    list.appendChild(bubble);
+  });
+}
+
+    document.getElementById("searchInput").addEventListener("input", e => {
+      const q = e.target.value.toLowerCase();
+      const filtered = allFriends.filter(f => f.name.toLowerCase().includes(q) || f.phone.includes(q));
+      displayFriends(filtered);
+    });
+  </script>
+
+  <a href="/home" class="home-button">🏠 Homepage</a>
+</body>
+</html>

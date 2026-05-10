@@ -327,38 +327,37 @@
     });
 
     function acceptFriend(requestId, fromUID, fromName, fromPhone, btn) {
-    const currentUID = firebase.auth().currentUser.uid;
-    const userRef = db.collection("users");
+      const currentUID = firebase.auth().currentUser.uid;
+      const userRef = db.collection("users");
 
-    userRef.doc(currentUID).collection("friends").doc(fromUID).set({
-      name: fromName,
-      phone: fromPhone
-    });
-
-    userRef.doc(currentUID).get().then(myDoc => {
-      const me = myDoc.data();
-      userRef.doc(fromUID).collection("friends").doc(currentUID).set({
-        name: me.name,
-        phone: me.phone
+      userRef.doc(currentUID).collection("friends").doc(fromUID).set({
+        name: fromName,
+        phone: fromPhone
       });
 
-      userRef.doc(currentUID).collection("friend_requests").doc(requestId).update({
-        status: "accepted"
+      userRef.doc(currentUID).get().then(myDoc => {
+        const me = myDoc.data();
+        userRef.doc(fromUID).collection("friends").doc(currentUID).set({
+          name: me.name,
+          phone: me.phone
+        });
+
+        userRef.doc(currentUID).collection("friend_requests").doc(requestId).update({
+          status: "accepted"
+        });
+
+        const parentCard = btn.closest(".friend-request-card");
+        parentCard.textContent = "";
+
+          const msg = document.createElement("div");
+          msg.className = "friend-accepted";
+          msg.textContent = "🎉 Friend's Request Accepted!";
+
+          parentCard.appendChild(msg);
+
+          setTimeout(() => parentCard.remove(), 3000);
       });
-
-      // Hide the parent card
-      const parentCard = btn.closest(".friend-request-card");
-      parentCard.textContent = "";
-
-        const msg = document.createElement("div");
-        msg.className = "friend-accepted";
-        msg.textContent = "🎉 Friend's Request Accepted!";
-
-        parentCard.appendChild(msg);
-
-        setTimeout(() => parentCard.remove(), 3000);
-    });
-  }
+    }
 
 
   </script>

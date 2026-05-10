@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Withdraw - SMU FinWallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: linear-gradient(to right, #f4f7fa, #e8ecf1);
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 1;
+      transition: opacity 0.6s ease-out;
+    }
+
+    body.fade-in {
+      animation: fadeIn 0.6s ease-out;
+    }
+
+    body.fade-out {
+      opacity: 0;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .form-container {
+      background-color: #4f46e5;
+      padding: 40px 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      max-width: 400px;
+      width: 90%;
+    }
+
+    label {
+      color: white;
+      font-weight: 600;
+    }
+
+    input {
+      width: 100%;
+      height: 48px;
+      padding: 0 14px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: none;
+      outline: none;
+      margin: 10px 0 20px;
+    }
+
+    button {
+      width: 100%;
+      height: 48px;
+      background-color: white;
+      color: #4f46e5;
+      font-weight: 600;
+      font-size: 16px;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #f0f0f0;
+    }
+
+    .status {
+      text-align: center;
+      margin-top: 20px;
+      font-weight: 500;
+      color: white;
+    }
+.fraud-modal {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: #ffffff;
+  padding: 2.5em 2em;
+  border-radius: 20px;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.25);
+  z-index: 9999;
+  width: 90%;
+  max-width: 440px;
+  font-family: 'Inter', sans-serif;
+  text-align: center;
+  animation: fadeInScale 0.4s ease-out;
+}
+
+.fraud-alert {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 1em;
+}
+
+.fraud-title {
+  color: #dc2626;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.fraud-message {
+  color: #111827;
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  margin: 1em 0 1.4em;
+}
+
+.fraud-note {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+
+
+
+  </style>
+</head>
+<body class="fade-in">
+  <div class="form-container">
+    <img src="{{ url_for('static', filename='logo.png') }}" alt="SMU FinWallet Logo" style="width: 350px; margin-bottom: 20px;" />
+    <div style="text-align: center; margin-bottom: 10px;">
+      <lottie-player
+        src="{{ url_for('static', filename='withdraw.json') }}"
+        background="transparent"
+        speed="1"
+        style="width: 180px; height: 180px; margin: 0 auto;"
+        loop
+        autoplay>
+      </lottie-player>
+      <h2 id="withdraw-title" style="color: white; ">Withdraw Funds ($)</h2>
+    </div>
+
+    <div id="iban-onboarding" style="margin-bottom: 20px; display: none;">
+        <input type="text" id="iban-input" placeholder="Enter IBAN" />
+        <button onclick="saveIban()">Let's Go... !</button>
+        <p id="iban-success-msg" style="color: white; font-weight: 500; margin-top: 30px; text-align: center;"></p>
+    </div>
+
+
+    <div id="withdraw-section" style="display: none;">
+    <p id="wallet-balance" style="color: white; font-weight: 500; margin-bottom: 8px; margin-top: 30px;"></p>
+    <input type="number" id="amount" placeholder="Enter Amount ($)" required />
+    <button onclick="submitWithdraw()">Withdraw</button>
+    </div>
+
+
+    <div id="status" class="status"></div>
+  </div>
+  
+<div id="fraud-modal" class="fraud-modal">
+  <!-- Lottie Alert Animation -->
+  <lottie-player
+    src="{{ url_for('static', filename='alert.json') }}"
+    background="transparent"
+    speed="1"
+    style="width: 100px; height: 100px; margin-bottom: 16px;"
+    loop
+    autoplay>
+  </lottie-player>
+
+  <!-- Alert Header -->
+  <div class="fraud-alert">
+    <h2 class="fraud-title">Suspicious Transaction</h2>
+  </div>
+
+  <!-- Dynamic Fraud Message -->
+  <p id="fraud-phone-msg" class="fraud-message">
+    <!-- JS will inject message here -->
+  </p>
+
+  <!-- Note about redirection -->
+  <p class="fraud-note">You’ll be redirected to the homepage shortly...</p>
+</div>
+
+
+
+
+
+  <script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyCHs2gr92xsPcPGgpvtlepvSBjYvgSOAgw",
+    authDomain: "smu-fintech-mvp-2025.firebaseapp.com",
+    projectId: "smu-fintech-mvp-2025",
+    storageBucket: "smu-fintech-mvp-2025.appspot.com",
+    messagingSenderId: "792829799933",
+    appId: "1:792829799933:web:71532891d3f1e11b33bd94"
+  };
+  firebase.initializeApp(firebaseConfig);
+  const auth = firebase.auth();
+
+  firebase.auth().onAuthStateChanged(async function(user) {
+    if (user) {
+      const idToken = await user.getIdToken();
+      const res = await fetch("/api/user", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken })
+      });
+      const data = await res.json();
+
+      const iban = data.iban;
+      const balance = data.balance || 0;
+
+      if (iban) {
+        document.getElementById("withdraw-title").innerText = "Withdraw Funds ($)";
+        document.getElementById("wallet-balance").textContent = `Available to Withdraw: $${balance.toFixed(2)}`;
+        document.getElementById("withdraw-section").style.display = "block";
+        window.currentBalance = balance;
+      } else {
+        document.getElementById("withdraw-title").innerText = "Register IBAN with Us!";
+        document.getElementById("iban-onboarding").style.display = "block";
+      }
+    }
+  });
+
+  async function submitWithdraw() {
+    const amount = parseFloat(document.getElementById("amount").value);
+    const statusEl = document.getElementById("status");
+
+    if (isNaN(amount) || amount < 10) {
+      statusEl.textContent = "Minimum withdrawal is $10.";
+      return;
+    }
+
+    if (amount > currentBalance) {
+      statusEl.textContent = "You cannot withdraw more than your balance.";
+      return;
+    }
+
+    const user = firebase.auth().currentUser;
+    if (!user) {
+      statusEl.textContent = "User not signed in.";
+      return;
+    }
+
+    try {
+      await submitTransaction("CASH_OUT", amount);
+    } catch (err) {
+      console.error("Withdraw error:", err);
+      statusEl.textContent = "Something went wrong.";
+    }
+  }
+
+  async function submitTransaction(type, amount, recipientPhone = null) {
+  const user = firebase.auth().currentUser;
+  const idToken = await user.getIdToken();
+
+  const res = await fetch("/api/transaction", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      idToken,
+      txType: type,
+      amount,
+      recipientPhone
+    })
+  });
+
+  const data = await res.json();
+
+  if (data.flagged) {
+    const modal = document.getElementById("fraud-modal");
+    modal.style.display = "flex";
+    document.getElementById("fraud-phone-msg").textContent =
+      `Your withdrawal of $${amount} is flagged for fraud. Please verify this transaction on the homepage!`;
+    setTimeout(() => window.location.href = "/home", 5000);
+    return; // ⛔ prevent success page redirection
+  }
+
+  if (data.success) {
+    window.location.href = `/success_withdraw?fraud=${data.fraud ? 1 : 0}&score=${parseFloat(data.fraud_score).toFixed(3)}`;
+  } else {
+    const statusEl = document.getElementById("status");
+    statusEl.textContent = `❌ ${data.message || "Withdrawal failed."}`;
+  }
+}
+
+
+  async function saveIban() {
+    const iban = document.getElementById("iban-input").value.trim();
+    const msgEl = document.getElementById("iban-success-msg");
+    const user = firebase.auth().currentUser;
+
+    if (!iban) {
+      msgEl.textContent = "❌ Please enter a valid IBAN.";
+      return;
+    }
+
+    if (!user) {
+      msgEl.textContent = "❌ You must be signed in.";
+      return;
+    }
+
+    try {
+      const idToken = await user.getIdToken();
+
+      const res = await fetch("/api/save-iban", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken, iban })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        msgEl.textContent = "IBAN Saved Successfully! Redirecting...";
+        setTimeout(() => window.location.reload(), 1500);
+      } else {
+        msgEl.textContent = "❌ Failed to save IBAN.";
+      }
+    } catch (err) {
+      console.error(err);
+      msgEl.textContent = "❌ Something went wrong. Try again.";
+    }
+  }
+</script>
+
+
+
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
+</body>
+</html>
