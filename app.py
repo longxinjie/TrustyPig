@@ -172,19 +172,19 @@ def get_linked_card():
 
 @app.route("/friends")
 def friends():
-    return render_template("friends.html")
+    return render_template("friends.html", firebase_config=get_firebase_config())
 
 @app.route("/add-friends")
 def add_friends():
-    return render_template("add-friends.html")
+    return render_template("add-friends.html", firebase_config=get_firebase_config())
 
 @app.route('/wallet')
 def wallet():
-    return render_template('wallet.html')
+    return render_template('wallet.html', firebase_config=get_firebase_config())
 
 @app.route('/piggypay')
 def piggypay():
-    return render_template('piggypay.html')
+    return render_template('piggypay.html', firebase_config=get_firebase_config())
 
 @app.route('/success_piggypay')
 def success_piggypay():
@@ -192,15 +192,15 @@ def success_piggypay():
 
 @app.route('/topup')
 def top_up():
-    return render_template("topup.html")
+    return render_template("topup.html", firebase_config=get_firebase_config())
 
 @app.route("/success_topup")
 def success_topup():
-    return render_template("success_topup.html")
+    return render_template("success_topup.html", )
 
 @app.route("/withdraw")
 def withdraw():
-    return render_template("withdraw.html")
+    return render_template("withdraw.html", firebase_config=get_firebase_config())
 
 @app.route("/success_withdraw")
 def success_withdraw():
@@ -497,7 +497,7 @@ def get_user_info():
     
 @app.route("/fraudsight")
 def fraudsight():
-    return render_template("fraudsight.html")
+    return render_template("fraudsight.html", firebase_config=get_firebase_config())
 
 @app.route("/api/fraudsight-data", methods=["POST"])
 def fraudsight_data():
