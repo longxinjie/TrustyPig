@@ -2,11 +2,12 @@ import joblib
 import pandas as pd
 import numpy as np
 from pathlib import Path
+import json
 from sklearn.metrics import f1_score, accuracy_score, roc_auc_score
 
 MODEL_PATH = Path("fraud_model.pkl")
 FEATURES_PATH = Path("feature_columns.csv")
-TEST_DATA_PATH = Path("data/app_transactions.csv")
+TEST_DATA_PATH = Path("data/smoke_test_dataset.csv")
 
 MIN_ACCURACY = 0.50
 MIN_F1 = 0.40
@@ -64,7 +65,7 @@ else:
     proba = pred
 
 accuracy = accuracy_score(y, pred)
-f1 = f1_score(y, pred, zero_division=0)
+f1 = f1_score(y, pred)
 
 print(f"Smoke accuracy: {accuracy:.4f}")
 print(f"Smoke F1: {f1:.4f}")
@@ -76,10 +77,20 @@ if len(set(y)) > 1:
 if accuracy < MIN_ACCURACY:
     raise RuntimeError(f"Smoke accuracy too low: {accuracy:.4f}")
 
-if y.sum() > 0:
-    if f1 < MIN_F1:
-        raise RuntimeError(f"Smoke F1 too low: {f1:.4f}")
-else:
-    print("Skipping F1 check because smoke dataset has no fraud labels.")
+
+if f1 < MIN_F1:
+    raise RuntimeError(f"Smoke F1 too low: {f1:.4f}")
 
 print("Smoke validation passed.")
+
+Path("ci_outputs").mkdir(exist_ok=True)
+
+metrics = {
+    "accuracy": float(accuracy),
+    "f1": float(f1)
+}
+
+with open("ci_outputs/metrics.json", "w") as f:
+    json.dump(metrics, f, indent=2)
+
+print("Saved CI metrics.")
