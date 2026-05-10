@@ -41,15 +41,21 @@ jobs:
         run: |
           echo "## TrustyPig Pipeline CI Report" > report.md
           echo "" >> report.md
-          echo "✅ Build completed: dependencies installed" >> report.md
-          echo "✅ Tests passed: pytest tests/" >> report.md
-          echo "✅ Package completed: artifacts generated" >> report.md
+          echo "Build completed: dependencies installed" >> report.md
+          echo "Tests passed: pytest tests/" >> report.md
+          echo "Package completed: artifacts generated" >> report.md
           echo "" >> report.md
           echo "### Pipeline CI Status" >> report.md
           echo "The TrustyPig ML pipeline components were successfully built, tested, and packaged." >> report.md
           cat report.md
+        
+      - name: Upload CI package
+        uses: actions/upload-artifact@v4
+        with:
+          name: trusty-pig-ci-package
+          path: ci_package/
 
-      - name: Upload CI report
+      - name: Generate CML validation report
         uses: actions/upload-artifact@v4
         with:
           name: trusty-pig-cml-report
