@@ -1,0 +1,4 @@
+direction,verified,receiver_freq,model_version,is_merchant,fraud,type,timestamp,sender_freq,label,amount,isFlagged,wallet_ratio,counterparty,fraud_score,prediction,hour_of_day
+in,True,0,v1,0,False,TRANSFER Received from +6591234567,2026-04-22 18:47:39.019331+00:00,1,legit,973.0,False,0.973,+6591234567,0.08393646031618118,0,18
+out,True,0,v1,0,False,TRANSFER Sent to +6592345678,2026-04-22 18:47:39.019331+00:00,1,legit,973.0,False,0.973,+6592345678,0.08393646031618118,0,18
+,True,0,v1,0,False,CASH_IN,2026-04-22 18:43:09.913478+00:00,0,legit,1000.0,False,0.5,,0.06745582073926926,0,18
