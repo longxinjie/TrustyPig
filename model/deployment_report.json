@@ -1,0 +1,20 @@
+{
+  "status": "deployed",
+  "deployment_stage": "production",
+  "metrics": {
+    "auc": 0.9996605196898366,
+    "f1": 0.9304265402843602,
+    "recall": 0.9995926680244399,
+    "precision": 0.8702127659574468,
+    "accuracy": 0.9994642828469791
+  },
+  "thresholds": {
+    "min_auc": 0.8,
+    "min_f1": 0.7,
+    "min_recall": 0.75
+  },
+  "candidate_model_path": "models\\fraud_model.pkl",
+  "candidate_feature_columns_path": "models\\feature_columns.csv",
+  "app_model_path": "model\\fraud_model.pkl",
+  "app_feature_columns_path": "model\\feature_columns.csv"
+}
