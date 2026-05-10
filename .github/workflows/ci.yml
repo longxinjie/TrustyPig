@@ -43,24 +43,14 @@ jobs:
         run: |
           python ci/package_artifacts.py
 
-      - name: Create CML report
+      - name: Create dynamic CML report
+        run: |
+          python ci/create_cml_report.py
+
+      - name: Publish confusion matrix with CML
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "# TrustyPig Pipeline CI Report" > report.md
-          echo "" >> report.md
-          echo "## CI Validation Checks" >> report.md
-          echo "| Check | Status |" >> report.md
-          echo "|---|---|" >> report.md
-          echo "| Model loads correctly | Passed |" >> report.md
-          echo "| Feature schema validation | Passed |" >> report.md
-          echo "| Prediction pipeline works | Passed |" >> report.md
-          echo "| Probability output range | Passed |" >> report.md
-          echo "| Smoke inference test | Passed |" >> report.md
-          echo "| Artifact packaging | Passed |" >> report.md
-          echo "" >> report.md
-          echo "## Smoke Test Metrics" >> report.md
-          cat ci_outputs/metrics.json >> report.md
           echo "" >> report.md
           echo "## Confusion Matrix" >> report.md
           cml publish ci_outputs/confusion_matrix.png --md >> report.md
