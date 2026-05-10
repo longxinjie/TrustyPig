@@ -11,3 +11,4 @@ pytest
 dotenv
 firebase_admin
 xgboost
+matplotlib
