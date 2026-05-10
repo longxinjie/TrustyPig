@@ -21,15 +21,17 @@ cred_path = os.getenv("FIREBASE_CREDENTIALS")
 if cred_path and os.path.exists(cred_path):
     cred = credentials.Certificate(cred_path)
     firebase_admin.initialize_app(cred)
+    db = firestore.client()
 else:
     firebase_admin.initialize_app()
+    db = None
 
 # The Firebase Admin SDK is initialised using a service account key file which is a secure JSON file downloaded from the Firebase project.
 # cred_path = os.getenv("FIREBASE_CREDENTIALS")
 # cred = credentials.Certificate(cred_path)
 # firebase_admin.initialize_app(cred) # create a Firebase app instance on this Flask server
 
-db = firestore.client() # access to Firestore
+# db = firestore.client() # access to Firestore
 
 # --- Stripe SDK ---
 import stripe
