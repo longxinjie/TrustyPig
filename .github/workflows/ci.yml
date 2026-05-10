@@ -35,27 +35,38 @@ jobs:
         run: |
           python -m pytest tests/
 
+      - name: Run ML smoke validation
+        run: |
+          python ci/smoke_validate_model.py
+
       - name: Package model and app artifacts
         run: |
           python ci/package_artifacts.py
 
       - name: Create CML report
-        env:
-          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo "# TrustyPig Pipeline CI Report" > report.md
           echo "" >> report.md
-          echo "## CI Stages Executed" >> report.md
-          echo "| Stage | Status |" >> report.md
+          echo "## CI Validation Checks" >> report.md
+          echo "| Check | Status |" >> report.md
           echo "|---|---|" >> report.md
-          echo "| Build Environment | Passed |" >> report.md
-          echo "| ML Pipeline Tests | Passed |" >> report.md
-          echo "| Artifact Packaging | Passed |" >> report.md
+          echo "| Model loads correctly | Passed |" >> report.md
+          echo "| Feature schema validation | Passed |" >> report.md
+          echo "| Prediction pipeline works | Passed |" >> report.md
+          echo "| Probability output range | Passed |" >> report.md
+          echo "| Smoke inference test | Passed |" >> report.md
+          echo "| Artifact packaging | Passed |" >> report.md
+          echo "" >> report.md
+          echo "## Smoke Test Metrics" >> report.md
+          cat ci_outputs/metrics.json >> report.md
+          echo "" >> report.md
+          echo "## Confusion Matrix" >> report.md
+          cml publish ci_outputs/confusion_matrix.png --md >> report.md
           echo "" >> report.md
           echo "## Pipeline CI Decision" >> report.md
           echo "**Approved for Pipeline CD**" >> report.md
 
-          cml publish report.md --md
+          cat report.md
 
       - name: Upload CI package
         uses: actions/upload-artifact@v4
@@ -63,8 +74,10 @@ jobs:
           name: trusty-pig-ci-package
           path: ci_package/
 
-      - name: Upload CML report
+      - name: Upload CML report and visuals
         uses: actions/upload-artifact@v4
         with:
           name: trusty-pig-cml-report
-          path: report.md
+          path: |
+            report.md
+            ci_outputs/
