@@ -6,6 +6,9 @@ on:
 
 permissions:
   contents: read
+  checks: write
+  issues: write
+  pull-requests: write
 
 jobs:
   build-test-package:
@@ -20,42 +23,47 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Setup CML
+        uses: iterative/setup-cml@v2
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           python -m pip install -r requirements.txt
 
-      - name: Run tests
+      - name: Run ML pipeline tests
         run: |
           python -m pytest tests/
 
-      - name: Package artifacts
+      - name: Package model and app artifacts
         run: |
           python ci/package_artifacts.py
 
-      - name: Install CML
-        run: |
-          npm install -g @dvcorg/cml
-
       - name: Create CML report
+        env:
+          REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "## TrustyPig Pipeline CI Report" > report.md
+          echo "# TrustyPig Pipeline CI Report" > report.md
           echo "" >> report.md
-          echo "Build completed: dependencies installed" >> report.md
-          echo "Tests passed: pytest tests/" >> report.md
-          echo "Package completed: artifacts generated" >> report.md
+          echo "## CI Stages Executed" >> report.md
+          echo "| Stage | Status |" >> report.md
+          echo "|---|---|" >> report.md
+          echo "| Build Environment | Passed |" >> report.md
+          echo "| ML Pipeline Tests | Passed |" >> report.md
+          echo "| Artifact Packaging | Passed |" >> report.md
           echo "" >> report.md
-          echo "### Pipeline CI Status" >> report.md
-          echo "The TrustyPig ML pipeline components were successfully built, tested, and packaged." >> report.md
-          cat report.md
-        
+          echo "## Pipeline CI Decision" >> report.md
+          echo "**Approved for Pipeline CD**" >> report.md
+
+          cml comment create report.md
+
       - name: Upload CI package
         uses: actions/upload-artifact@v4
         with:
           name: trusty-pig-ci-package
           path: ci_package/
 
-      - name: Generate CML validation report
+      - name: Upload CML report
         uses: actions/upload-artifact@v4
         with:
           name: trusty-pig-cml-report
