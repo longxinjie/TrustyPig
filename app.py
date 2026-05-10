@@ -123,6 +123,11 @@ def add_card_page():
             return jsonify({"success": True}), 200
         except Exception as e:
             return jsonify({"success": False, "error": str(e)}), 500
+        
+# --- Home Page ---
+@app.route('/home')
+def home():
+    return render_template('homepage.html', firebase_config=get_firebase_config())
 
 @app.route("/api/get-linked-card", methods=["POST"])
 def get_linked_card():
@@ -164,10 +169,6 @@ def get_linked_card():
 
     except Exception as e:
         return jsonify({"error": str(e)}), 400
-    
-@app.route('/home')
-def home():
-    return render_template('homepage.html')
 
 @app.route("/friends")
 def friends():
@@ -241,7 +242,6 @@ def predict():
         'probability': float(probability)
     })
 
-# Add this route to app.py
 @app.route("/api/transaction", methods=["POST"])
 def unified_transaction():
     data = request.get_json()
