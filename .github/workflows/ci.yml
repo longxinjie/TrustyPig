@@ -55,7 +55,7 @@ jobs:
           echo "## Pipeline CI Decision" >> report.md
           echo "**Approved for Pipeline CD**" >> report.md
 
-          cml comment create report.md
+          cml publish report.md --md
 
       - name: Upload CI package
         uses: actions/upload-artifact@v4
