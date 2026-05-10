@@ -16,10 +16,18 @@ import numpy as np
 import firebase_admin
 from firebase_admin import credentials, firestore, auth
 
-# The Firebase Admin SDK is initialised using a service account key file which is a secure JSON file downloaded from the Firebase project.
 cred_path = os.getenv("FIREBASE_CREDENTIALS")
-cred = credentials.Certificate(cred_path)
-firebase_admin.initialize_app(cred) # create a Firebase app instance on this Flask server
+
+if cred_path and os.path.exists(cred_path):
+    cred = credentials.Certificate(cred_path)
+    firebase_admin.initialize_app(cred)
+else:
+    firebase_admin.initialize_app()
+
+# The Firebase Admin SDK is initialised using a service account key file which is a secure JSON file downloaded from the Firebase project.
+# cred_path = os.getenv("FIREBASE_CREDENTIALS")
+# cred = credentials.Certificate(cred_path)
+# firebase_admin.initialize_app(cred) # create a Firebase app instance on this Flask server
 
 db = firestore.client() # access to Firestore
 
