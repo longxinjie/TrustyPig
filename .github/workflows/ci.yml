@@ -70,3 +70,10 @@ jobs:
           path: |
             report.md
             ci_outputs/
+
+      - name: Trigger ClearML CD Pipeline
+        if: success()
+        env:
+          MODEL_VERSION: v2
+        run: |
+          python cd/pipeline_cd.py
