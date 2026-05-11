@@ -50,14 +50,12 @@ jobs:
         run: |
           python ci/create_cml_report.py
 
-      - name: Add confusion matrix to report
+      - name: Append CI decision
         run: |
           echo "" >> report.md
-          echo "## Confusion Matrix" >> report.md
-          echo "![Confusion Matrix](./ci_outputs/confusion_matrix.png)" >> report.md
-          echo "" >> report.md
-          echo "## Pipeline CI Decision" >> report.md
-          echo "**Approved for Pipeline CD**" >> report.md
+          echo "## CI Decision" >> report.md
+          echo "The fraud model passed smoke validation and is eligible for the CD stage." >> report.md
+
           cat report.md
 
       - name: Publish CML report as PR comment
