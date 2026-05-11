@@ -3,6 +3,7 @@ name: TrustyPig CI Pipeline
 on:
   push:
     branches: [ main ]
+
   pull_request:
     branches: [ main ]
 
@@ -49,17 +50,11 @@ jobs:
         run: |
           python ci/create_cml_report.py
 
-      - name: Publish confusion matrix with CML
+      - name: Publish CML report as PR comment
+        if: github.event_name == 'pull_request'
         env:
           REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          echo "" >> report.md
-          echo "## Confusion Matrix" >> report.md
-          cml publish ci_outputs/confusion_matrix.png --md >> report.md
-          echo "" >> report.md
-          echo "## Pipeline CI Decision" >> report.md
-          echo "**Approved for Pipeline CD**" >> report.md
-          cat report.md
           cml comment create report.md
 
       - name: Upload CI package
