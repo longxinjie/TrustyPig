@@ -50,14 +50,6 @@ jobs:
         run: |
           python ci/create_cml_report.py
 
-      - name: Append CI decision
-        run: |
-          echo "" >> report.md
-          echo "## CI Decision" >> report.md
-          echo "The fraud model passed smoke validation and is eligible for the CD stage." >> report.md
-
-          cat report.md
-
       - name: Publish CML report as PR comment
         if: github.event_name == 'pull_request'
         env:
