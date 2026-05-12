@@ -11,7 +11,7 @@ model_version = task.get_parameter(
     default="v1"
 )
 
-model_path = Path("fraud_model.pkl")
+model_path = Path("model/fraud_model.pkl")
 
 if not model_path.exists():
     raise FileNotFoundError("Model not found.")
