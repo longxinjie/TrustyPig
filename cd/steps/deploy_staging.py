@@ -19,8 +19,8 @@ model_version = task.get_parameter(
 )
 
 # Paths
-MODEL_PATH = Path("fraud_model.pkl")
-FEATURES_PATH = Path("feature_columns.csv")
+MODEL_PATH = Path("model/fraud_model.pkl")
+FEATURES_PATH = Path("model/feature_columns.csv")
 APP_PATH = Path("app.py")
 
 STAGING_DIR = Path("staging")
