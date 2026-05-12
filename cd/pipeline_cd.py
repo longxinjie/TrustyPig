@@ -15,7 +15,7 @@ pipe.set_default_execution_queue("default")
 pipe.add_step(
     name="register_model",
     base_task_project="TrustyPig-MLOps",
-    base_task_name="register_model_task",
+    base_task_name="register_model_task_v2",
     execution_queue="default",
     parameter_override={
         "General/model_version": MODEL_VERSION
@@ -26,7 +26,7 @@ pipe.add_step(
     name="deploy_staging",
     parents=["register_model"],
     base_task_project="TrustyPig-MLOps",
-    base_task_name="deploy_staging_task",
+    base_task_name="deploy_staging_task_v2",
     execution_queue="default",
     parameter_override={
         "General/model_version": MODEL_VERSION
@@ -37,7 +37,7 @@ pipe.add_step(
     name="validate_deployment",
     parents=["deploy_staging"],
     base_task_project="TrustyPig-MLOps",
-    base_task_name="validate_deployment_task",
+    base_task_name="validate_deployment_task_v2",
     execution_queue="default",
     parameter_override={
         "General/model_version": MODEL_VERSION
